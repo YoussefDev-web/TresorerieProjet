@@ -2,369 +2,116 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Modifier Opération</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1a2e3b; font-family: 'Segoe UI', sans-serif; color: #e2e8f0; min-height: 100vh; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#1a2e3b;font-family:'Segoe UI',sans-serif;color:#e2e8f0;min-height:100vh}
+        .header{background:#0f2030;padding:14px 28px;border-bottom:2px solid #1e3a50;display:flex;align-items:center;gap:12px}
+        .header h1{font-size:17px;font-weight:700;letter-spacing:.08em}
+        .badge-edit{background:#78350f;border:1px solid #b45309;color:#fcd34d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+        .back-btn{margin-left:auto;background:#1e3a50;border:1px solid #2d5a7a;color:#b0cde0;padding:6px 14px;border-radius:5px;text-decoration:none;font-size:12.5px}
+        .back-btn:hover{background:#2d5a7a}
+        .alert{padding:10px 16px;border-radius:6px;font-size:13px;margin:12px 28px 0}
+        .alert-success{background:#14532d33;border:1px solid #14532d;color:#86efac}
+        .alert-error{background:#7f1d1d33;border:1px solid #7f1d1d;color:#fca5a5}
+        .main{display:flex;gap:60px;padding:22px 28px;align-items:flex-start}
 
-        /* ── Header ── */
-        .header {
-            background: #0f2030;
-            padding: 14px 28px;
-            border-bottom: 2px solid #1e3a50;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .header h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.08em; }
-        .header .back-btn {
-            margin-left: auto;
-            background: #1e3a50;
-            border: 1px solid #2d5a7a;
-            color: #b0cde0;
-            padding: 6px 14px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 12.5px;
-        }
-        .header .back-btn:hover { background: #2d5a7a; }
+        .form-card{background:#1e3345;border:1px solid #2a4a60;border-radius:6px;width:430px;flex-shrink:0;overflow:hidden}
+        .form-row{display:flex;align-items:stretch;border-bottom:1px solid #2a4a60;cursor:pointer;transition:background .15s;min-height:40px}
+        .form-row:hover{background:#243d54}
+        .form-row.active{background:#1a3550;outline:2px solid #3b82f6;outline-offset:-2px}
+        .form-row.no-click{cursor:default}
+        .form-row.no-click:hover{background:transparent}
+        .form-row.dyn-row{border-left:3px solid #e8a030}
+        .form-row.modified .row-value{background:#fef08a;color:#1a2e3b}
+        .row-label{background:#1a2e3b;color:#e2e8f0;font-size:12.5px;font-weight:500;padding:0 12px;width:170px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-right:1px solid #2a4a60}
+        .row-label.dyn{color:#e8a030}
+        .plus-icon{color:#4ade80;font-size:15px;font-weight:700}
+        .row-value{flex:1;background:#dde4ea;color:#1a2e3b;font-size:13px;padding:0 12px;display:flex;align-items:center;font-weight:500;min-height:40px}
+        .row-value.empty{background:#c8d5de}
+        .row-value.readonly{background:#b8c8d4;color:#334155;font-size:12px}
+        .dyn-sep{padding:6px 12px;background:#0f1e2b;font-size:10.5px;font-weight:700;color:#e8a030;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid #2a4a60}
+        .form-footer{background:#1e3345;padding:10px 14px;display:flex;justify-content:flex-end;border-top:1px solid #2a4a60}
+        .save-btn{background:#b45309;border:none;color:#fff;padding:8px 20px;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+        .save-btn:hover{background:#d97706}
 
-        /* ── Badge mode ── */
-        .mode-badge {
-            background: #78350f44;
-            border: 1px solid #78350f;
-            color: #fbbf24;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* ── Alerts ── */
-        .alert { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin: 12px 28px 0; }
-        .alert-success { background: #14532d33; border: 1px solid #14532d; color: #86efac; }
-        .alert-error   { background: #7f1d1d33; border: 1px solid #7f1d1d; color: #fca5a5; }
-
-        /* ── Main layout ── */
-        .main {
-            display: flex;
-            gap: 60px;
-            padding: 22px 28px;
-            align-items: flex-start;
-        }
-
-        /* ── LEFT : Formulaire ── */
-        .form-card {
-            background: #1e3345;
-            border: 1px solid #2a4a60;
-            border-radius: 6px;
-            width: 430px;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .form-row {
-            display: flex;
-            align-items: stretch;
-            border-bottom: 1px solid #2a4a60;
-            cursor: pointer;
-            transition: background 0.15s;
-            min-height: 40px;
-        }
-        .form-row:last-of-type { border-bottom: none; }
-        .form-row:hover { background: #243d54; }
-        .form-row.active {
-            background: #1a3550;
-            outline: 2px solid #f59e0b;
-            outline-offset: -2px;
-        }
-        .form-row.no-click { cursor: default; }
-        .form-row.no-click:hover { background: transparent; }
-
-        .row-label {
-            background: #1a2e3b;
-            color: #e2e8f0;
-            font-size: 12.5px;
-            font-weight: 500;
-            padding: 0 12px;
-            width: 170px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-right: 1px solid #2a4a60;
-        }
-        .edit-icon { color: #f59e0b; font-size: 13px; }
-
-        .row-value {
-            flex: 1;
-            background: #dde4ea;
-            color: #1a2e3b;
-            font-size: 13px;
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            min-height: 40px;
-            word-break: break-word;
-        }
-        .row-value.empty  { background: #c8d5de; }
-        .row-value.readonly { background: #b8c8d4; color: #334155; font-size: 12px; }
-        .row-value.modified { background: #fef9c3; color: #1a2e3b; }
-
-        /* ── Footer ── */
-        .form-footer {
-            background: #1e3345;
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #2a4a60;
-        }
-        .cancel-btn {
-            background: #1e3a50;
-            border: 1px solid #2d5a7a;
-            color: #94a3b8;
-            padding: 8px 18px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 13px;
-        }
-        .cancel-btn:hover { background: #2d5a7a; }
-        .save-main-btn {
-            background: #b45309;
-            border: none;
-            color: #fff;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .save-main-btn:hover { background: #d97706; }
-
-        /* ── RIGHT panels ── */
-        .right-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 36px;
-            padding-top: 4px;
-        }
-
-        .panel-title { font-size: 13px; font-weight: 600; color: #f59e0b; margin-bottom: 12px; }
-
-        /* ── Input ── */
-        .add-row { display: flex; align-items: center; gap: 10px; }
-        #add-input {
-            background: #dde4ea;
-            border: none;
-            color: #1a2e3b;
-            padding: 9px 13px;
-            border-radius: 5px;
-            font-size: 13px;
-            width: 240px;
-            font-family: inherit;
-        }
-        #add-input:focus { outline: 2px solid #f59e0b; }
-        #add-input::placeholder { color: #7a9ab0; }
-        #add-input:disabled { background: #b8c8d4; color: #7a9ab0; cursor: not-allowed; }
-
-        /* ── Select Etat ── */
-        #add-select {
-            background: #dde4ea;
-            border: none;
-            color: #1a2e3b;
-            padding: 9px 13px;
-            border-radius: 5px;
-            font-size: 13px;
-            width: 240px;
-            font-family: inherit;
-            cursor: pointer;
-            display: none;
-        }
-        #add-select:focus { outline: 2px solid #f59e0b; }
-        #add-select option { background: #dde4ea; color: #1a2e3b; }
-
-        /* ── Remove panel ── */
-        .remove-row { display: flex; align-items: center; gap: 10px; }
-        .remove-value-box {
-            background: #dde4ea;
-            color: #1a2e3b;
-            padding: 9px 13px;
-            border-radius: 5px;
-            font-size: 13px;
-            width: 240px;
-            min-height: 38px;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-        }
-        .remove-value-box.empty { color: #7a9ab0; font-style: italic; font-weight: 400; }
-
-        /* ── Icon buttons ── */
-        .icon-btn {
-            background: #1e3a50;
-            border: 1px solid #2d5a7a;
-            color: #4ade80;
-            width: 36px; height: 36px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; flex-shrink: 0;
-            transition: background 0.15s;
-        }
-        .icon-btn:hover { background: #2d5a7a; }
-        .icon-btn.remove-icon { color: #f87171; border-color: #7f1d1d55; }
-        .icon-btn.remove-icon:hover { background: #7f1d1d55; }
-        .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .hint { font-size: 11px; color: #475569; margin-top: 8px; }
-
-        /* ── Nature valides ── */
-        .nature-hint {
-            background: #1e3345;
-            border: 1px solid #2a4a60;
-            border-radius: 6px;
-            padding: 12px 16px;
-            font-size: 12px;
-            color: #7ab8d4;
-        }
-        .nature-hint strong { color: #f59e0b; display: block; margin-bottom: 8px; }
-        .nature-hint ul { list-style: none; padding: 0; }
-        .nature-hint ul li { padding: 3px 0; }
-        .nature-hint ul li::before { content: "✓ "; color: #4ade80; }
-        .nature-hint ul li.warn::before { content: "✕ "; color: #f87171; }
+        .right-panel{flex:1;display:flex;flex-direction:column;gap:36px;padding-top:4px}
+        .panel-title{font-size:13px;font-weight:600;color:#f0c040;margin-bottom:12px}
+        .add-row{display:flex;align-items:center;gap:10px}
+        #add-input{background:#dde4ea;border:none;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;font-family:inherit}
+        #add-input:focus{outline:2px solid #3b82f6}
+        #add-input:disabled{background:#b8c8d4;color:#7a9ab0;cursor:not-allowed}
+        #add-select{background:#dde4ea;border:none;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;font-family:inherit;cursor:pointer;display:none}
+        .remove-row{display:flex;align-items:center;gap:10px}
+        .remove-box{background:#dde4ea;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;min-height:38px;display:flex;align-items:center;font-weight:500}
+        .remove-box.empty{color:#7a9ab0;font-style:italic;font-weight:400}
+        .icon-btn{background:#1e3a50;border:1px solid #2d5a7a;color:#4ade80;width:36px;height:36px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background .15s}
+        .icon-btn:hover{background:#2d5a7a}
+        .icon-btn.del{color:#f87171;border-color:#7f1d1d55}
+        .icon-btn.del:hover{background:#7f1d1d55}
+        .icon-btn:disabled{opacity:.3;cursor:not-allowed}
+        .hint{font-size:11px;color:#475569;margin-top:8px}
     </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
-    <span style="font-size:18px">✏️</span>
-    <h1>MODIFIER L'OPÉRATION</h1>
-    <span class="mode-badge">✏️ Mode Modification</span>
-    <a href="/tresorerie" class="back-btn">← Retour à la liste</a>
+    <span style="font-size:18px">💹</span>
+    <h1>FLUX DE TRÉSORERIE</h1>
+    <span class="badge-edit">✏️ Mode Modification</span>
+    <a href="/flux-tresorerie" class="back-btn">← Retour</a>
 </div>
 
-<!-- Alerts -->
 <div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
-<div th:if="${erreur}" class="alert alert-error"   th:text="${erreur}"></div>
+<div th:if="${erreur}"  class="alert alert-error"   th:text="${erreur}"></div>
 
-<!-- Main -->
 <div class="main">
 
-    <!-- ════════════════════════════════════════
-         LEFT : Formulaire modification
-    ════════════════════════════════════════ -->
+    <!-- FORMULAIRE -->
     <div>
         <div class="form-card">
-
-            <!-- N° Op (readonly) -->
             <div class="form-row no-click">
                 <div class="row-label">N° Op.</div>
-                <div class="row-value readonly"
-                     th:text="${'#' + operation.id}">-</div>
+                <div class="row-value readonly" th:text="${'#' + operation.id}">#—</div>
             </div>
-
-            <!-- Date (readonly) -->
             <div class="form-row no-click">
-                <div class="row-label">Date d'Opération</div>
-                <div class="row-value readonly"
-                     th:text="${operation.dateFlux != null} ? ${#temporals.format(operation.dateFlux, 'dd/MM/yyyy')} : '--'">--</div>
+                <div class="row-label">Date</div>
+                <div class="row-value readonly" th:text="${#temporals.format(operation.dateFlux,'dd/MM/yyyy')}">—</div>
             </div>
 
-            <!-- Champs modifiables -->
-            <div class="form-row" data-field="natureFlux" data-label="Nature de Flux" onclick="selectField(this)">
-                <div class="row-label">Nature de Flux <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-natureFlux"
-                     th:text="${operation.natureFlux}"
-                     th:classappend="${operation.natureFlux == null or #strings.isEmpty(operation.natureFlux)} ? 'empty' : ''"></div>
+            <!-- Champs fixes pré-remplis -->
+            <div class="form-row" data-field="natureFlux"    data-label="Nature de Flux" onclick="selectField(this)"><div class="row-label">Nature de Flux <span class="plus-icon">+</span></div><div class="row-value" id="val-natureFlux"    th:text="${operation.natureFlux}"    th:classappend="${#strings.isEmpty(operation.natureFlux)}    ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="caisse"        data-label="Caisse"          onclick="selectField(this)"><div class="row-label">Caisse <span class="plus-icon">+</span></div><div class="row-value" id="val-caisse"        th:text="${operation.caisse}"        th:classappend="${#strings.isEmpty(operation.caisse)}        ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="modeFlux"      data-label="Mode de Flux"    onclick="selectField(this)"><div class="row-label">Mode de Flux <span class="plus-icon">+</span></div><div class="row-value" id="val-modeFlux"      th:text="${operation.modeFlux}"      th:classappend="${#strings.isEmpty(operation.modeFlux)}      ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="titulaireFlux" data-label="Titulaire"       onclick="selectField(this)"><div class="row-label">Titulaire <span class="plus-icon">+</span></div><div class="row-value" id="val-titulaireFlux" th:text="${operation.titulaireFlux}" th:classappend="${#strings.isEmpty(operation.titulaireFlux)} ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="montant"       data-label="Montant (dh)"    onclick="selectField(this)"><div class="row-label">Montant (dh) <span class="plus-icon">+</span></div><div class="row-value" id="val-montant"       th:text="${operation.montant}"       th:classappend="${operation.montant == null}                 ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="ccp"           data-label="CC/P"            onclick="selectField(this)"><div class="row-label">CC/P <span class="plus-icon">+</span></div><div class="row-value" id="val-ccp"           th:text="${operation.ccp}"           th:classappend="${#strings.isEmpty(operation.ccp)}           ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="famille"       data-label="Famille"         onclick="selectField(this)"><div class="row-label">Famille <span class="plus-icon">+</span></div><div class="row-value" id="val-famille"       th:text="${operation.famille}"       th:classappend="${#strings.isEmpty(operation.famille)}       ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="designation"   data-label="Désignation"     onclick="selectField(this)"><div class="row-label">Désignation <span class="plus-icon">+</span></div><div class="row-value" id="val-designation"   th:text="${operation.designation}"   th:classappend="${#strings.isEmpty(operation.designation)}   ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="description"   data-label="Description"     onclick="selectField(this)"><div class="row-label">Description <span class="plus-icon">+</span></div><div class="row-value" id="val-description"   th:text="${operation.description}"   th:classappend="${#strings.isEmpty(operation.description)}   ? ' empty':''">—</div></div>
+            <div class="form-row" data-field="etat"          data-label="Etat"            onclick="selectField(this)"><div class="row-label">Etat <span class="plus-icon">+</span></div><div class="row-value" id="val-etat"          th:text="${operation.etat}"          th:classappend="${#strings.isEmpty(operation.etat)}          ? ' empty':''">—</div></div>
+
+            <!-- Champs dynamiques pré-remplis depuis le JSON -->
+            <div th:if="${not #lists.isEmpty(champsDynamiques)}" class="dyn-sep">✦ Champs personnalisés</div>
+            <div th:each="ch : ${champsDynamiques}"
+                 class="form-row dyn-row"
+                 th:data-field="${'champ_' + ch.nomChamp}"
+                 th:data-label="${ch.nomChamp}"
+                 onclick="selectField(this)">
+                <div class="row-label dyn" th:text="${ch.nomChamp}">—</div>
+                <div th:id="${'val-champ_' + ch.nomChamp}"
+                     th:text="${valeursDynamiques != null and valeursDynamiques[ch.nomChamp] != null} ? ${valeursDynamiques[ch.nomChamp]} : ''"
+                     th:class="${valeursDynamiques == null or valeursDynamiques[ch.nomChamp] == null or #strings.isEmpty(valeursDynamiques[ch.nomChamp])} ? 'row-value empty' : 'row-value'">—</div>
             </div>
 
-            <div class="form-row" data-field="caisse" data-label="Caisse" onclick="selectField(this)">
-                <div class="row-label">Caisse <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-caisse"
-                     th:text="${operation.caisse}"
-                     th:classappend="${operation.caisse == null or #strings.isEmpty(operation.caisse)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="modeFlux" data-label="Mode de Flux" onclick="selectField(this)">
-                <div class="row-label">Mode de Flux <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-modeFlux"
-                     th:text="${operation.modeFlux}"
-                     th:classappend="${operation.modeFlux == null or #strings.isEmpty(operation.modeFlux)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="titulaireFlux" data-label="Titulaire de Flux" onclick="selectField(this)">
-                <div class="row-label">Titulaire de Flux <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-titulaireFlux"
-                     th:text="${operation.titulaireFlux}"
-                     th:classappend="${operation.titulaireFlux == null or #strings.isEmpty(operation.titulaireFlux)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="montant" data-label="Montant (dh)" onclick="selectField(this)">
-                <div class="row-label">Montant (dh) <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-montant"
-                     th:text="${operation.montant}"
-                     th:classappend="${operation.montant == null} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="ccp" data-label="CC/P" onclick="selectField(this)">
-                <div class="row-label">CC/P <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-ccp"
-                     th:text="${operation.ccp}"
-                     th:classappend="${operation.ccp == null or #strings.isEmpty(operation.ccp)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="famille" data-label="Famille" onclick="selectField(this)">
-                <div class="row-label">Famille <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-famille"
-                     th:text="${operation.famille}"
-                     th:classappend="${operation.famille == null or #strings.isEmpty(operation.famille)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="designation" data-label="Désignation" onclick="selectField(this)">
-                <div class="row-label">Désignation <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-designation"
-                     th:text="${operation.designation}"
-                     th:classappend="${operation.designation == null or #strings.isEmpty(operation.designation)} ? 'empty' : ''"></div>
-            </div>
-
-            <div class="form-row" data-field="description" data-label="Description" onclick="selectField(this)">
-                <div class="row-label">Description <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-description"
-                     th:text="${operation.description}"
-                     th:classappend="${operation.description == null or #strings.isEmpty(operation.description)} ? 'empty' : ''"></div>
-            </div>
-
-            <!-- Etat (select) -->
-            <div class="form-row" data-field="etat" data-label="Etat" onclick="selectField(this)">
-                <div class="row-label">Etat <span class="edit-icon">✏️</span></div>
-                <div class="row-value" id="val-etat"
-                     th:text="${operation.etat}"
-                     th:classappend="${operation.etat == null or #strings.isEmpty(operation.etat)} ? 'empty' : ''"></div>
-            </div>
-
-            <!-- Footer -->
             <div class="form-footer">
-                <a href="/tresorerie" class="cancel-btn">✕ Annuler</a>
-                <button class="save-main-btn" onclick="submitForm()">💾 Sauvegarder les modifications</button>
+                <button class="save-btn" onclick="submitForm()">💾 Sauvegarder les modifications</button>
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════
-         RIGHT : Modifier / Retirer
-    ════════════════════════════════════════ -->
+    <!-- PANELS DROITE -->
     <div class="right-panel">
-
-        <!-- Modifier valeur -->
         <div>
             <div class="panel-title" id="add-title">✏️ Modifier une valeur</div>
             <div class="add-row">
@@ -374,71 +121,60 @@
                     <option value="Validé">Validé</option>
                     <option value="Annulé">Annulé</option>
                 </select>
-                <input id="add-input" type="text"
-                       placeholder="Cliquez sur un champ..."
-                       disabled
-                       onkeydown="if(event.key==='Enter') addValue()" />
-                <button class="icon-btn" onclick="addValue()" title="Valider">💾</button>
+                <input id="add-input" type="text" placeholder="Cliquez sur un champ..." disabled
+                       onkeydown="if(event.key==='Enter') addValue()"/>
+                <button class="icon-btn" onclick="addValue()">💾</button>
             </div>
-            <div class="hint" id="add-hint">← Cliquez sur un champ à gauche pour le modifier</div>
+            <div class="hint" id="add-hint">← Cliquez sur un champ à gauche</div>
         </div>
-
-        <!-- Retirer valeur -->
         <div>
             <div class="panel-title">🗑️ Retirer la valeur</div>
             <div class="remove-row">
-                <button class="icon-btn remove-icon" id="remove-btn" onclick="removeValue()" disabled>🚪</button>
-                <div class="remove-value-box empty" id="remove-box">-- aucun champ sélectionné --</div>
-                <button class="icon-btn remove-icon" id="remove-btn2" onclick="removeValue()" disabled>💾</button>
+                <button class="icon-btn del" id="remove-btn" onclick="removeValue()" disabled>🚪</button>
+                <div class="remove-box empty" id="remove-box">-- aucun champ sélectionné --</div>
+                <button class="icon-btn del" id="remove-btn2" onclick="removeValue()" disabled>💾</button>
             </div>
         </div>
-
-        <!-- Rappel natures valides -->
-        <div class="nature-hint">
-            <strong>⚠️ Valeurs acceptées pour Nature de Flux :</strong>
-            <ul>
-                <li>Encaissement</li>
-                <li>Décaissement</li>
-                <li>Créance</li>
-                <li>Dette</li>
-                <li>Solde de départ</li>
-            </ul>
-        </div>
-
     </div>
 </div>
 
-<!-- Formulaire caché POST vers modifier/{id} -->
+<!-- Formulaire caché -->
 <form id="hidden-form" th:action="@{/operations/modifier/{id}(id=${operation.id})}" method="post" style="display:none">
-    <input type="hidden" name="natureFlux"    id="f-natureFlux" />
-    <input type="hidden" name="caisse"        id="f-caisse" />
-    <input type="hidden" name="modeFlux"      id="f-modeFlux" />
-    <input type="hidden" name="titulaireFlux" id="f-titulaireFlux" />
-    <input type="hidden" name="montant"       id="f-montant" />
-    <input type="hidden" name="ccp"           id="f-ccp" />
-    <input type="hidden" name="famille"       id="f-famille" />
-    <input type="hidden" name="designation"   id="f-designation" />
-    <input type="hidden" name="description"   id="f-description" />
-    <input type="hidden" name="etat"          id="f-etat" />
-    <input type="hidden" name="dateFlux" id="f-dateFlux"
-           th:value="${operation.dateFlux != null} ? ${operation.dateFlux} : ${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
+    <input type="hidden" name="natureFlux"    id="f-natureFlux"/>
+    <input type="hidden" name="caisse"        id="f-caisse"/>
+    <input type="hidden" name="modeFlux"      id="f-modeFlux"/>
+    <input type="hidden" name="titulaireFlux" id="f-titulaireFlux"/>
+    <input type="hidden" name="montant"       id="f-montant"/>
+    <input type="hidden" name="ccp"           id="f-ccp"/>
+    <input type="hidden" name="famille"       id="f-famille"/>
+    <input type="hidden" name="designation"   id="f-designation"/>
+    <input type="hidden" name="description"   id="f-description"/>
+    <input type="hidden" name="etat"          id="f-etat"/>
+    <input type="hidden" name="dateFlux"      th:value="${operation.dateFlux}"/>
+    <!-- Inputs cachés dynamiques générés par Thymeleaf -->
+    <input th:each="ch : ${champsDynamiques}"
+           type="hidden"
+           th:name="${'champ_' + ch.nomChamp}"
+           th:id="${'f-champ_' + ch.nomChamp}"
+           value=""/>
 </form>
 
 <script>
     /*<![CDATA[*/
+    const fixedFields = ['natureFlux','caisse','modeFlux','titulaireFlux',
+        'montant','ccp','famille','designation','description','etat'];
+    const formValues = {};
+    fixedFields.forEach(f => {
+        const el = document.getElementById('val-' + f);
+        formValues[f] = el ? el.textContent.trim() : '';
+    });
 
-    const formValues = {
-        natureFlux: "", caisse: "", modeFlux: "", titulaireFlux: "",
-        montant: "", ccp: "", famille: "", designation: "", description: "", etat: ""
-    };
-
-    // Charger les valeurs existantes depuis Thymeleaf
-    Object.keys(formValues).forEach(field => {
-        const el = document.getElementById('val-' + field);
-        if (el) {
-            const txt = el.textContent.trim();
-            if (txt) formValues[field] = txt;
-        }
+    // Initialiser les valeurs des champs dynamiques depuis le DOM
+    // (les divs val-champ_* contiennent les valeurs existantes pré-chargées par Thymeleaf)
+    document.querySelectorAll('input[id^="f-champ_"]').forEach(input => {
+        const key = input.id.substring(2); // "f-champ_Ref" → "champ_Ref"
+        const display = document.getElementById('val-' + key);
+        formValues[key] = display ? display.textContent.trim() : '';
     });
 
     let activeField = null;
@@ -446,122 +182,74 @@
     function selectField(row) {
         document.querySelectorAll('.form-row.active').forEach(r => r.classList.remove('active'));
         row.classList.add('active');
-
         activeField = row.dataset.field;
         const label  = row.dataset.label;
-        const curVal = formValues[activeField];
-
-        document.getElementById('add-title').textContent = '✏️ Modifier ' + label;
-        document.getElementById('add-hint').textContent  = curVal
-            ? '✏️ Valeur actuelle : "' + curVal + '" — modifiez et validez'
-            : '✏️ Ce champ est vide — saisissez une valeur';
-
-        const input  = document.getElementById('add-input');
-        const select = document.getElementById('add-select');
-
+        const curVal = formValues[activeField] || '';
+        document.getElementById('add-title').textContent = '✏️ Modifier : ' + label;
+        document.getElementById('add-hint').textContent  = curVal ? '✏️ Valeur actuelle : ' + curVal : '✏️ Champ vide';
+        const input = document.getElementById('add-input');
+        const sel   = document.getElementById('add-select');
         if (activeField === 'etat') {
-            input.style.display  = 'none';
-            select.style.display = 'block';
-            select.value = curVal || '';
-            select.focus();
+            input.style.display = 'none'; sel.style.display = 'block';
+            sel.value = curVal; sel.focus();
         } else {
-            select.style.display = 'none';
-            input.style.display  = 'block';
+            sel.style.display = 'none'; input.style.display = 'block';
             input.disabled = false;
             input.type = (activeField === 'montant') ? 'number' : 'text';
             input.placeholder = 'Modifier ' + label + '...';
-            input.value = curVal || '';
-            input.focus();
-            input.select();
+            input.value = curVal; input.focus(); input.select();
         }
-
-        const removeBox  = document.getElementById('remove-box');
-        const removeBtn  = document.getElementById('remove-btn');
-        const removeBtn2 = document.getElementById('remove-btn2');
-        if (curVal) {
-            removeBox.textContent = curVal;
-            removeBox.classList.remove('empty');
-            removeBtn.disabled  = false;
-            removeBtn2.disabled = false;
-        } else {
-            removeBox.textContent = '-- vide --';
-            removeBox.classList.add('empty');
-            removeBtn.disabled  = true;
-            removeBtn2.disabled = true;
-        }
+        const box = document.getElementById('remove-box');
+        const rb  = document.getElementById('remove-btn');
+        const rb2 = document.getElementById('remove-btn2');
+        if (curVal) { box.textContent = curVal; box.classList.remove('empty'); rb.disabled = rb2.disabled = false; }
+        else { box.textContent = '-- vide --'; box.classList.add('empty'); rb.disabled = rb2.disabled = true; }
     }
 
     function addValue() {
         if (!activeField) return;
-        const input  = document.getElementById('add-input');
-        const select = document.getElementById('add-select');
-        let val = activeField === 'etat' ? select.value : input.value.trim();
-
-        if (!val) {
-            (activeField === 'etat' ? select : input).style.outline = '2px solid #f87171';
-            setTimeout(() => { input.style.outline = ''; select.style.outline = ''; }, 800);
-            return;
-        }
-
+        const input = document.getElementById('add-input');
+        const sel   = document.getElementById('add-select');
+        const val   = activeField === 'etat' ? sel.value : input.value.trim();
+        if (!val) { input.style.outline = '2px solid #f87171'; setTimeout(() => input.style.outline = '', 800); return; }
         formValues[activeField] = val;
-        const display = document.getElementById('val-' + activeField);
-        display.textContent = val;
-        display.classList.remove('empty');
-        display.classList.add('modified');    // fond jaune = valeur modifiée
-
-        const removeBox  = document.getElementById('remove-box');
-        const removeBtn  = document.getElementById('remove-btn');
-        const removeBtn2 = document.getElementById('remove-btn2');
-        removeBox.textContent = val;
-        removeBox.classList.remove('empty');
-        removeBtn.disabled  = false;
-        removeBtn2.disabled = false;
-
-        const activeRow = document.querySelector('.form-row.active');
-        if (activeRow) {
-            activeRow.style.background = '#2a4a1a';
-            setTimeout(() => { activeRow.style.background = ''; }, 500);
-        }
+        const d = document.getElementById('val-' + activeField);
+        d.textContent = val; d.classList.remove('empty');
+        const row = document.querySelector('.form-row.active');
+        if (row) row.classList.add('modified');
+        const box = document.getElementById('remove-box');
+        box.textContent = val; box.classList.remove('empty');
+        document.getElementById('remove-btn').disabled = false;
+        document.getElementById('remove-btn2').disabled = false;
     }
 
     function removeValue() {
         if (!activeField) return;
         formValues[activeField] = '';
-
-        const display = document.getElementById('val-' + activeField);
-        display.textContent = '';
-        display.classList.add('empty');
-        display.classList.remove('modified');
-
-        const removeBox  = document.getElementById('remove-box');
-        const removeBtn  = document.getElementById('remove-btn');
-        const removeBtn2 = document.getElementById('remove-btn2');
-        removeBox.textContent = '-- vide --';
-        removeBox.classList.add('empty');
-        removeBtn.disabled  = true;
-        removeBtn2.disabled = true;
-
-        const input  = document.getElementById('add-input');
-        const select = document.getElementById('add-select');
-        input.value  = '';
-        select.value = '';
-        input.focus();
-
-        const activeRow = document.querySelector('.form-row.active');
-        if (activeRow) {
-            activeRow.style.background = '#4a1a1a';
-            setTimeout(() => { activeRow.style.background = ''; }, 500);
-        }
+        const d = document.getElementById('val-' + activeField);
+        d.textContent = ''; d.classList.add('empty');
+        const row = document.querySelector('.form-row.active');
+        if (row) row.classList.add('modified');
+        const box = document.getElementById('remove-box');
+        box.textContent = '-- vide --'; box.classList.add('empty');
+        document.getElementById('remove-btn').disabled = true;
+        document.getElementById('remove-btn2').disabled = true;
+        const input = document.getElementById('add-input');
+        const sel   = document.getElementById('add-select');
+        if (activeField === 'etat') { sel.value = ''; sel.focus(); } else { input.value = ''; input.focus(); }
     }
 
     function submitForm() {
-        if (!formValues.natureFlux) { alert('⚠️ Nature de Flux est obligatoire'); return; }
-        if (!formValues.caisse)     { alert('⚠️ Caisse est obligatoire');          return; }
-        if (!formValues.montant)    { alert('⚠️ Montant est obligatoire');          return; }
-
-        Object.keys(formValues).forEach(key => {
-            const inp = document.getElementById('f-' + key);
-            if (inp) inp.value = formValues[key];
+        if (!formValues.natureFlux) { alert('⚠️ Veuillez remplir : Nature de Flux'); return; }
+        if (!formValues.caisse)     { alert('⚠️ Veuillez remplir : Caisse');          return; }
+        if (!formValues.montant)    { alert('⚠️ Veuillez remplir : Montant');          return; }
+        fixedFields.forEach(k => { const i = document.getElementById('f-' + k); if (i) i.value = formValues[k] || ''; });
+        // Remplir les inputs cachés dynamiques créés par Thymeleaf
+        Object.keys(formValues).forEach(k => {
+            if (k.startsWith('champ_')) {
+                const i = document.getElementById('f-' + k);
+                if (i) i.value = formValues[k] || '';
+            }
         });
         document.getElementById('hidden-form').submit();
     }

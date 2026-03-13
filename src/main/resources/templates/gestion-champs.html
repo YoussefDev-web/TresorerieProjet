@@ -2,271 +2,126 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Gestion des Champs</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#14202b;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
 
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#14202b; font-family:'IBM Plex Sans',sans-serif; color:#c8daea; min-height:100vh; }
-        ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:#14202b; }
-        ::-webkit-scrollbar-thumb { background:#2a4155; border-radius:3px; }
+        .header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid #1e3245;background:#0f1e2b}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .dot{width:7px;height:7px;border-radius:50%;background:#3ec97a;box-shadow:0 0 6px #3ec97a}
+        .header h1{font-size:15px;font-weight:700;letter-spacing:.1em}
+        .back-btn{background:#223347;border:1px solid #2a4155;color:#b0cde0;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;transition:background .15s}
+        .back-btn:hover{background:#2a4155}
 
-        /* ── HEADER ── */
-        .header {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:14px 28px;
-            border-bottom:1px solid #1e3245;
-            background:#0f1e2b;
-        }
-        .header-left { display:flex; align-items:center; gap:10px; }
-        .dot { width:7px; height:7px; border-radius:50%; background:#3ec97a; box-shadow:0 0 6px #3ec97a; }
-        .header h1 { font-size:16px; font-weight:700; letter-spacing:.1em; }
-        .back-btn {
-            background:#223347; border:1px solid #2a4155; color:#b0cde0;
-            padding:7px 16px; border-radius:4px; text-decoration:none;
-            font-size:12.5px; display:inline-flex; align-items:center; gap:6px;
-            transition:background .15s;
-        }
-        .back-btn:hover { background:#2a4155; }
+        .alert{margin:12px 24px 0;padding:9px 14px;border-radius:4px;font-size:12.5px}
+        .alert-success{background:#14532d22;border:1px solid #14532d;color:#4ade80}
+        .alert-error{background:#7f1d1d22;border:1px solid #7f1d1d;color:#f87171}
 
-        /* ── ALERTS ── */
-        .alert { margin:14px 28px 0; padding:10px 16px; border-radius:4px; font-size:13px; }
-        .alert-success { background:#14532d22; border:1px solid #14532d; color:#4ade80; }
-        .alert-error   { background:#7f1d1d22; border:1px solid #7f1d1d; color:#f87171; }
+        .page-title{padding:20px 24px 0;display:flex;align-items:center;gap:12px}
+        .page-title h2{font-size:17px;font-weight:700;color:#e2e8f0}
+        .badge{background:#223347;border:1px solid #2a4155;color:#7fa3be;font-size:11px;padding:2px 10px;border-radius:20px;font-family:'IBM Plex Mono',monospace}
 
-        /* ── PAGE TITLE ── */
-        .page-header {
-            padding:22px 28px 0;
-            display:flex; align-items:center; gap:12px;
-        }
-        .page-header h2 { font-size:18px; font-weight:700; color:#e2e8f0; }
-        .badge-count {
-            background:#223347; border:1px solid #2a4155;
-            color:#7fa3be; font-size:11px; padding:2px 10px;
-            border-radius:20px; font-family:'IBM Plex Mono',monospace;
-        }
+        .main{display:flex;gap:20px;padding:18px 24px;align-items:flex-start}
 
-        /* ── MAIN LAYOUT ── */
-        .main {
-            display:flex; gap:28px;
-            padding:22px 28px 36px;
-            align-items:flex-start;
-        }
+        .card{background:#1b2d3d;border:1px solid #2a4155;border-radius:6px;overflow:hidden}
+        .card-header{padding:11px 16px;border-bottom:1px solid #2a4155;display:flex;align-items:center;gap:8px}
+        .card-header h3{font-size:12.5px;font-weight:700;letter-spacing:.05em}
+        .card-body{padding:16px}
 
-        /* ── CARD ── */
-        .card {
-            background:#1b2d3d;
-            border:1px solid #2a4155;
-            border-radius:6px;
-            overflow:hidden;
-        }
-        .card-header {
-            padding:12px 18px;
-            border-bottom:1px solid #2a4155;
-            display:flex; align-items:center; gap:8px;
-        }
-        .card-header h3 { font-size:13px; font-weight:700; letter-spacing:.04em; }
-        .card-header .icon { font-size:15px; }
-        .card-body { padding:18px; }
+        /* AJOUTER */
+        .add-card{width:300px;flex-shrink:0}
+        .field-label{font-size:11.5px;font-weight:600;color:#7fa3be;display:block;margin-bottom:6px}
+        .field-input{background:#14202b;border:1px solid #2a4155;color:#fff;padding:8px 12px;border-radius:4px;font-size:12.5px;font-family:inherit;width:100%}
+        .field-input:focus{outline:none;border-color:#4fa8e8}
+        .field-input::placeholder{color:#4a6a82}
+        .add-btn{width:100%;margin-top:12px;background:#1a5c38;border:1px solid #2a8a58;color:#6effa8;padding:9px;border-radius:4px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+        .add-btn:hover{background:#226a42}
+        .info-note{margin-top:14px;background:#14202b;border:1px solid #1e3245;border-radius:4px;padding:10px 12px;font-size:11px;color:#4a6a82;line-height:1.7}
+        .info-note strong{color:#e8a030;display:block;margin-bottom:3px}
 
-        /* ── AJOUTER CARD ── */
-        .add-card { width:340px; flex-shrink:0; }
+        /* LISTE */
+        .list-card{flex:1}
+        .champs-table{width:100%;border-collapse:collapse;font-size:12px}
+        .champs-table thead th{padding:9px 14px;text-align:left;color:#7fa3be;font-weight:600;font-size:11.5px;border-bottom:2px solid #2a4155;background:#14202b}
+        .champs-table tbody tr{border-bottom:1px solid #1e3245;transition:background .1s}
+        .champs-table tbody tr:last-child{border-bottom:none}
+        .champs-table tbody tr:hover{background:#1e3345}
+        .champs-table tbody td{padding:10px 14px}
+        .td-ordre{color:#4a6a82;font-family:'IBM Plex Mono',monospace;font-size:11px;width:44px}
+        .td-nom{color:#e2e8f0;font-weight:500}
+        .td-del{width:56px;text-align:center}
+        .del-btn{background:transparent;border:1px solid #4a1a1a;color:#e05555;padding:5px 9px;border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s}
+        .del-btn:hover{background:#4a1a1a}
+        .empty-state{text-align:center;padding:32px 20px;color:#4a6a82;font-size:12.5px}
+        .empty-state span{font-size:26px;display:block;margin-bottom:8px}
 
-        .field-group { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
-        .field-label { font-size:12px; font-weight:600; color:#7fa3be; }
-        .field-input {
-            background:#14202b;
-            border:1px solid #2a4155;
-            color:#fff;
-            padding:9px 13px;
-            border-radius:4px;
-            font-size:13px;
-            font-family:inherit;
-            width:100%;
-            transition:border-color .15s;
-        }
-        .field-input:focus { outline:none; border-color:#4fa8e8; }
-        .field-input::placeholder { color:#4a6a82; }
-
-        .add-btn {
-            width:100%;
-            background:#1a5c38;
-            border:1px solid #2a8a58;
-            color:#6effa8;
-            padding:9px;
-            border-radius:4px;
-            font-size:13px;
-            font-weight:600;
-            font-family:inherit;
-            cursor:pointer;
-            display:flex; align-items:center; justify-content:center; gap:8px;
-            transition:background .15s;
-        }
-        .add-btn:hover { background:#226a42; }
-
-        .info-box {
-            margin-top:16px;
-            background:#14202b;
-            border:1px solid #1e3245;
-            border-radius:4px;
-            padding:12px 14px;
-            font-size:11.5px;
-            color:#7fa3be;
-            line-height:1.7;
-        }
-        .info-box strong { color:#e8a030; display:block; margin-bottom:4px; }
-
-        /* ── LISTE CARD ── */
-        .list-card { flex:1; }
-
-        .champs-table {
-            width:100%;
-            border-collapse:collapse;
-            font-size:12.5px;
-        }
-        .champs-table thead th {
-            padding:9px 14px;
-            text-align:left;
-            color:#7fa3be;
-            font-weight:600;
-            font-size:11.5px;
-            border-bottom:2px solid #2a4155;
-            background:#14202b;
-        }
-        .champs-table tbody tr {
-            border-bottom:1px solid #1e3245;
-            transition:background .1s;
-        }
-        .champs-table tbody tr:last-child { border-bottom:none; }
-        .champs-table tbody tr:hover { background:#1e3345; }
-        .champs-table tbody td { padding:10px 14px; }
-
-        .td-ordre { color:#4a6a82; font-family:'IBM Plex Mono',monospace; font-size:11px; width:50px; }
-        .td-nom   { color:#e2e8f0; font-weight:500; }
-        .td-del   { width:60px; text-align:center; }
-
-        .del-btn {
-            background:transparent;
-            border:1px solid #4a1a1a;
-            color:#e05555;
-            padding:5px 10px;
-            border-radius:4px;
-            font-size:12px;
-            cursor:pointer;
-            font-family:inherit;
-            transition:background .15s, border-color .15s;
-        }
-        .del-btn:hover { background:#4a1a1a; border-color:#8b1a1a; }
-
-        .empty-state {
-            text-align:center;
-            padding:36px 20px;
-            color:#4a6a82;
-            font-size:13px;
-        }
-        .empty-state .icon { font-size:28px; display:block; margin-bottom:8px; }
-
-        /* ── PREVIEW TABLE (aperçu colonnes) ── */
-        .preview-section { padding:0 28px 36px; }
-        .preview-title {
-            font-size:12px; font-weight:600; color:#7fa3be;
-            letter-spacing:.06em; text-transform:uppercase;
-            margin-bottom:10px; display:flex; align-items:center; gap:8px;
-        }
-        .preview-title::after { content:''; flex:1; height:1px; background:#1e3245; }
-
-        .preview-wrap {
-            border:1px solid #2a4155;
-            border-radius:5px;
-            overflow:auto;
-        }
-        .preview-tbl {
-            width:100%;
-            border-collapse:collapse;
-            font-size:11px;
-            table-layout:fixed;
-        }
-        .preview-tbl thead tr { background:#1b2d3d; }
-        .preview-tbl thead th {
-            padding:8px 10px;
-            text-align:left; color:#7fa3be; font-weight:600;
-            border-bottom:2px solid #2a4155; border-right:1px solid #2a4155;
-            white-space:nowrap; overflow:hidden;
-        }
-        .preview-tbl thead th:last-child { border-right:none; }
-        .preview-tbl thead th.dyn { color:#e8a030; }
-        .preview-tbl tbody tr { border-bottom:1px solid #1e3245; }
-        .preview-tbl tbody tr:nth-child(odd)  { background:#14202b; }
-        .preview-tbl tbody tr:nth-child(even) { background:#1b2d3d; }
-        .preview-tbl tbody td { padding:7px 10px; border-right:1px solid #1e3245; }
-        .preview-tbl tbody td:last-child { border-right:none; }
+        /* APERÇU */
+        .preview-section{padding:0 24px 32px}
+        .preview-label{font-size:11px;font-weight:600;color:#4a6a82;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .preview-label::after{content:'';flex:1;height:1px;background:#1e3245}
+        .preview-box{border:1px solid #2a4155;border-radius:5px;overflow:hidden}
+        .preview-tbl{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+        .preview-tbl thead tr{background:#1b2d3d}
+        .preview-tbl thead th{padding:8px;text-align:left;color:#7fa3be;font-weight:600;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap;overflow:hidden}
+        .preview-tbl thead th:last-child{border-right:none}
+        .preview-tbl thead th.dyn{color:#e8a030}
+        .preview-tbl tbody tr:nth-child(odd){background:#14202b}
+        .preview-tbl tbody tr:nth-child(even){background:#1b2d3d}
+        .preview-tbl tbody td{padding:7px 8px;border-right:1px solid #1e3245}
+        .preview-tbl tbody td:last-child{border-right:none}
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <div class="header-left">
         <div class="dot"></div>
-        <h1>GESTION DES CHAMPS</h1>
+        <h1>GESTION DES CHAMPS DYNAMIQUES</h1>
     </div>
     <a href="/flux-tresorerie" class="back-btn">← Retour au tableau de bord</a>
 </div>
 
-<!-- Alerts -->
 <div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
 <div th:if="${erreur}" class="alert alert-error"   th:text="${erreur}"></div>
 
-<!-- PAGE TITLE -->
-<div class="page-header">
-    <h2>Colonnes dynamiques</h2>
-    <span class="badge-count"
-          th:text="${#lists.size(champsDynamiques)} + ' champ(s)'">0 champ(s)</span>
+<div class="page-title">
+    <h2>Colonnes personnalisées</h2>
+    <span class="badge" th:text="${#lists.size(champsDynamiques)} + ' champ(s)'">0 champ(s)</span>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-    <!-- ══ CARD AJOUTER ══ -->
+    <!-- AJOUTER -->
     <div class="card add-card">
-        <div class="card-header">
-            <span class="icon">➕</span>
-            <h3>AJOUTER UN CHAMP</h3>
-        </div>
+        <div class="card-header"><span>➕</span><h3>AJOUTER UN CHAMP</h3></div>
         <div class="card-body">
             <form th:action="@{/champs/ajouter}" method="post">
-                <div class="field-group">
-                    <label class="field-label">Nom du champ</label>
-                    <input class="field-input" type="text" name="nomChamp"
-                           placeholder="Ex: Référence, Projet, N° Bon..."
-                           maxlength="100" required autofocus/>
-                </div>
+                <label class="field-label">Nom du nouveau champ</label>
+                <input class="field-input" type="text" name="nomChamp"
+                       placeholder="Ex : Référence, Projet, N° Bon..."
+                       maxlength="100" required autofocus/>
                 <button type="submit" class="add-btn">💾 &nbsp;Ajouter le champ</button>
             </form>
-
-            <div class="info-box">
+            <div class="info-note">
                 <strong>ℹ️ Comment ça fonctionne</strong>
-                Le champ sera ajouté comme nouvelle colonne dans le tableau des opérations.
-                Il sera stocké en base de données et visible sur toutes les lignes.
+                Le champ est sauvegardé en base et apparaît comme nouvelle colonne
+                dans le tableau des opérations. Vous pourrez saisir sa valeur lors
+                de l'ajout ou de la modification d'une opération.
             </div>
         </div>
     </div>
 
-    <!-- ══ CARD LISTE / SUPPRIMER ══ -->
+    <!-- LISTE / SUPPRIMER -->
     <div class="card list-card">
-        <div class="card-header">
-            <span class="icon">📋</span>
-            <h3>CHAMPS EXISTANTS</h3>
-        </div>
-
-        <!-- Tableau des champs -->
+        <div class="card-header"><span>📋</span><h3>CHAMPS EXISTANTS</h3></div>
         <table class="champs-table">
             <thead>
             <tr>
                 <th class="td-ordre">#</th>
                 <th>Nom du champ</th>
-                <th>Supprimer</th>
+                <th class="td-del">Supprimer</th>
             </tr>
             </thead>
             <tbody>
@@ -276,56 +131,47 @@
                 <td class="td-del">
                     <form th:action="@{/champs/supprimer/{id}(id=${ch.id})}" method="post">
                         <button type="submit" class="del-btn"
-                                onclick="return confirm('Supprimer le champ \'' + /*[[${ch.nomChamp}]]*/ '' + '\' ?')">
-                            🗑️
-                        </button>
+                                onclick="return confirm('Supprimer ce champ ?')">🗑️</button>
                     </form>
                 </td>
             </tr>
-
             <tr th:if="${#lists.isEmpty(champsDynamiques)}">
                 <td colspan="3">
                     <div class="empty-state">
-                        <span class="icon">📭</span>
-                        Aucun champ dynamique ajouté.<br/>
-                        Utilisez le formulaire à gauche pour en créer un.
+                        <span>📭</span>
+                        Aucun champ ajouté.<br/>Utilisez le formulaire ci-contre.
                     </div>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
+</div>
 
-</div><!-- /main -->
-
-<!-- ══ APERÇU DU TABLEAU ══ -->
+<!-- APERÇU -->
 <div class="preview-section">
-    <div class="preview-title">Aperçu du tableau des opérations</div>
-    <div class="preview-wrap">
+    <div class="preview-label">Aperçu du tableau des opérations</div>
+    <div class="preview-box">
         <table class="preview-tbl">
             <thead>
             <tr>
-                <th style="width:45px">N° Op.</th>
-                <th style="width:82px">Date</th>
-                <th style="width:100px">Nature de Flux</th>
-                <th style="width:95px">Caisse</th>
-                <th style="width:85px">Mode de Flux</th>
-                <th style="width:100px">Titulaire du Flux</th>
-                <th style="width:85px">Montant (dh)</th>
-                <th style="width:65px">CC/P</th>
-                <th style="width:75px">Famille</th>
-                <th style="width:90px">Désignation</th>
-                <th style="width:90px">Description</th>
-                <th style="width:75px">Etat</th>
-                <!-- Colonnes dynamiques -->
-                <th th:each="ch : ${champsDynamiques}"
-                    class="dyn" style="width:90px"
-                    th:text="${ch.nomChamp}">—</th>
-                <th style="width:60px">Actions</th>
+                <th style="width:40px">N° Op.</th>
+                <th style="width:75px">Date</th>
+                <th style="width:95px">Nature de Flux</th>
+                <th style="width:85px">Caisse</th>
+                <th style="width:78px">Mode de Flux</th>
+                <th style="width:88px">Titulaire</th>
+                <th style="width:78px">Montant</th>
+                <th style="width:55px">CC/P</th>
+                <th style="width:65px">Famille</th>
+                <th style="width:80px">Désignation</th>
+                <th style="width:80px">Description</th>
+                <th style="width:65px">Etat</th>
+                <th th:each="ch : ${champsDynamiques}" class="dyn" style="width:85px" th:text="${ch.nomChamp}">—</th>
+                <th style="width:55px">Actions</th>
             </tr>
             </thead>
             <tbody>
-            <!-- 3 lignes vides pour visualiser le rendu -->
             <tr th:each="i : ${#numbers.sequence(1,3)}">
                 <td th:each="j : ${#numbers.sequence(1, 13 + #lists.size(champsDynamiques))}"></td>
             </tr>

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Operation {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,22 +25,21 @@ public class Operation {
     private LocalDate dateFlux;
 
     @Column(name = "NatureFlux")
-    private String natureFlux; // Exemple: Vente, Achat, Salaire
+    private String natureFlux;
 
     @Column(name = "Caisse")
-    private String caisse; // Description de l'opération
+    private String caisse;
 
     @Column(name = "ModeFlux")
-    private String modeFlux; // Exemple: Espèces, Chèque, Virement
+    private String modeFlux;
 
     @Column(name = "TitulaireFlux")
-    private String titulaireFlux; // Exemple: Caisse Centrale, BP, Attijari
+    private String titulaireFlux;
 
-    // Utilisation de BigDecimal pour éviter les erreurs d'arrondi sur l'argent
     @Column(name = "montant", precision = 15, scale = 2)
     private BigDecimal montant;
 
-    @Column(name = "CC/P")
+    @Column(name = "CC_P")
     private String ccp;
 
     @Column(name = "Famille")
@@ -53,4 +53,9 @@ public class Operation {
 
     @Column(name = "Etat")
     private String etat;
+
+    // Stocke les valeurs des champs dynamiques en JSON
+    // Exemple : {"Référence":"REF-001","Projet":"Bestmobile"}
+    @Column(name = "valeurs_dynamiques", columnDefinition = "TEXT")
+    private String valeursDynamiques;
 }

@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -20,7 +21,7 @@ public class OperationController {
     private final OperationService operationService;
     private final CaisseService    caisseService;
 
-    // ── Nouvelle opération ────────────────────────────────────────
+    // ─── Nouvelle opération ───────────────────────────────────────
     @GetMapping("/operations/nouvelle")
     public String nouvelle(Model model) {
         model.addAttribute("operation",        new Operation());
@@ -29,16 +30,12 @@ public class OperationController {
         return "nouvelle-operation";
     }
 
-    // ── Sauvegarder ───────────────────────────────────────────────
-    // On utilise HttpServletRequest pour lire TOUS les paramètres
-    // y compris les champ_* qui ne font pas partie du modèle Operation
     @PostMapping("/operations/sauvegarder")
     public String sauvegarder(@ModelAttribute Operation operation,
                               HttpServletRequest request,
                               RedirectAttributes ra) {
         try {
-            Map<String, String> valeursDyn = extraireChampsDynamiques(request);
-            operationService.sauvegarder(operation, valeursDyn);
+            operationService.sauvegarder(operation, extraireChampsDynamiques(request));
             ra.addFlashAttribute("succes", "✅ Opération ajoutée !");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -47,7 +44,7 @@ public class OperationController {
         return "redirect:/flux-tresorerie";
     }
 
-    // ── Modifier (GET) ────────────────────────────────────────────
+    // ─── Modifier ─────────────────────────────────────────────────
     @GetMapping("/operations/modifier/{id}")
     public String modifier(@PathVariable Long id, Model model) {
         Operation op = operationService.findById(id)
@@ -59,15 +56,13 @@ public class OperationController {
         return "modifier-operation";
     }
 
-    // ── Modifier (POST) ───────────────────────────────────────────
     @PostMapping("/operations/modifier/{id}")
     public String modifierSave(@PathVariable Long id,
                                @ModelAttribute Operation operation,
                                HttpServletRequest request,
                                RedirectAttributes ra) {
         try {
-            Map<String, String> valeursDyn = extraireChampsDynamiques(request);
-            operationService.modifier(id, operation, valeursDyn);
+            operationService.modifier(id, operation, extraireChampsDynamiques(request));
             ra.addFlashAttribute("succes", "✅ Opération modifiée !");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -76,19 +71,60 @@ public class OperationController {
         return "redirect:/flux-tresorerie";
     }
 
-    // ── Supprimer ─────────────────────────────────────────────────
-    @GetMapping("/operations/supprimer/{id}")
-    public String supprimer(@PathVariable Long id, RedirectAttributes ra) {
+    // ─── Archiver (au lieu de supprimer) ─────────────────────────
+    // L'opération est masquée du tableau principal et n'impacte plus la caisse
+    @GetMapping("/operations/archiver/{id}")
+    public String archiver(@PathVariable Long id, RedirectAttributes ra) {
         try {
-            operationService.supprimer(id);
-            ra.addFlashAttribute("succes", "✅ Opération supprimée.");
+            operationService.archiver(id);
+            ra.addFlashAttribute("succes", "📦 Opération archivée.");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
         }
         return "redirect:/flux-tresorerie";
     }
 
-    // ── Gestion des champs dynamiques ─────────────────────────────
+    // ─── Page Archives ────────────────────────────────────────────
+    @GetMapping("/archives")
+    public String archives(Model model) {
+        List<Operation> archivees = operationService.findArchivees();
+
+        Map<Long, Map<String, String>> valeursDynMap = new HashMap<>();
+        for (Operation op : archivees) {
+            valeursDynMap.put(op.getId(), operationService.jsonToMap(op.getValeursDynamiques()));
+        }
+
+        model.addAttribute("operations",       archivees);
+        model.addAttribute("champsDynamiques", operationService.listerChamps());
+        model.addAttribute("valeursDynMap",    valeursDynMap);
+        return "archives";
+    }
+
+    // ─── Restaurer depuis les archives ───────────────────────────
+    @GetMapping("/archives/restaurer/{id}")
+    public String restaurer(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            operationService.restaurer(id);
+            ra.addFlashAttribute("succes", "✅ Opération restaurée dans le tableau principal.");
+        } catch (RuntimeException e) {
+            ra.addFlashAttribute("erreur", e.getMessage());
+        }
+        return "redirect:/archives";
+    }
+
+    // ─── Supprimer définitivement (depuis archives seulement) ────
+    @GetMapping("/archives/supprimer/{id}")
+    public String supprimerDefinitivement(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            operationService.supprimerDefinitivement(id);
+            ra.addFlashAttribute("succes", "🗑️ Opération supprimée définitivement.");
+        } catch (RuntimeException e) {
+            ra.addFlashAttribute("erreur", e.getMessage());
+        }
+        return "redirect:/archives";
+    }
+
+    // ─── Gestion champs dynamiques ────────────────────────────────
     @GetMapping("/champs")
     public String champsPage(Model model) {
         model.addAttribute("champsDynamiques", operationService.listerChamps());
@@ -117,22 +153,15 @@ public class OperationController {
         return "redirect:/champs";
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Lit depuis HttpServletRequest tous les params dont le nom
-    // commence par "champ_"
-    // Ex : champ_Référence=REF-001  →  {"Référence":"REF-001"}
-    // Utiliser HttpServletRequest garantit qu'on récupère TOUS les
-    // paramètres même quand @ModelAttribute est présent
-    // ─────────────────────────────────────────────────────────────
+    // ─── Utilitaire : extraire params champ_* ────────────────────
     private Map<String, String> extraireChampsDynamiques(HttpServletRequest request) {
         Map<String, String> result = new HashMap<>();
         request.getParameterMap().forEach((key, values) -> {
             if (key.startsWith("champ_") && values.length > 0) {
-                String nomChamp = key.substring(6); // supprimer "champ_"
-                String valeur   = values[0];
-                if (valeur != null && !valeur.isBlank()) {
-                    result.put(nomChamp, valeur.trim());
-                }
+                String nom    = key.substring(6);
+                String valeur = values[0];
+                if (valeur != null && !valeur.isBlank())
+                    result.put(nom, valeur.trim());
             }
         });
         return result;

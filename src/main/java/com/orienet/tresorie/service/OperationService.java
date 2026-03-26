@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -24,22 +25,26 @@ public class OperationService {
             "Encaissement", "Décaissement", "Créance", "Dette", "Solde de départ"
     );
 
-    // ─── CRUD opérations ─────────────────────────────────────────
-    public List<Operation>    findAll()               { return operationRepository.findAll(); }
-    public Optional<Operation> findById(Long id)      { return operationRepository.findById(id); }
-    public List<Operation>    findByCaisse(String c)  { return operationRepository.findByCaisse(c); }
-    public List<Operation>    findByNatureFlux(String n){ return operationRepository.findByNatureFlux(n); }
-    public List<Operation>    findByEtat(String e)    { return operationRepository.findByEtat(e); }
+    // ─── Lister opérations actives ────────────────────────────────
+    public List<Operation> findAll()                 { return operationRepository.findByArchiveeFalse(); }
+    public Optional<Operation> findById(Long id)     { return operationRepository.findById(id); }
+    public List<Operation> findByCaisse(String c)    { return operationRepository.findByCaisseAndArchiveeFalse(c); }
+    public List<Operation> findByNatureFlux(String n){ return operationRepository.findByNatureFluxAndArchiveeFalse(n); }
+    public List<Operation> findByEtat(String e)      { return operationRepository.findByEtatAndArchiveeFalse(e); }
+    public List<Operation> findByDateBetween(LocalDate d, LocalDate f) {
+        return operationRepository.findByDateFluxBetweenAndArchiveeFalse(d, f);
+    }
+
+    // ─── Lister opérations archivées ─────────────────────────────
+    public List<Operation> findArchivees() { return operationRepository.findByArchiveeTrue(); }
 
     // ─── SAUVEGARDER ─────────────────────────────────────────────
     @Transactional
     public Operation sauvegarder(Operation operation, Map<String, String> valeursDyn) {
         validerNatureFlux(operation.getNatureFlux());
         verifierCaisse(operation.getCaisse());
-
-        // Convertir la Map en JSON et stocker dans la colonne
+        operation.setArchivee(false);
         operation.setValeursDynamiques(mapToJson(valeursDyn));
-
         Operation saved = operationRepository.save(operation);
         recalculer(saved.getCaisse());
         return saved;
@@ -55,6 +60,7 @@ public class OperationService {
                 .orElseThrow(() -> new RuntimeException("Opération introuvable : " + id));
 
         String ancienneCaisse = existing.getCaisse();
+        String ancienEtat     = existing.getEtat();
 
         existing.setDateFlux(modifiee.getDateFlux());
         existing.setNatureFlux(modifiee.getNatureFlux());
@@ -68,29 +74,64 @@ public class OperationService {
         existing.setDescription(modifiee.getDescription());
         existing.setEtat(modifiee.getEtat());
 
-        // Fusionner : garder les anciennes valeurs + écraser avec les nouvelles
         Map<String, String> existingDyn = jsonToMap(existing.getValeursDynamiques());
         if (valeursDyn != null) existingDyn.putAll(valeursDyn);
         existing.setValeursDynamiques(mapToJson(existingDyn));
 
         Operation saved = operationRepository.save(existing);
+
+        // Recalculer la caisse dans tous les cas
+        // (l'état Annulé est géré dans les requêtes SQL du repository)
         recalculer(ancienneCaisse);
         if (!Objects.equals(ancienneCaisse, saved.getCaisse()))
             recalculer(saved.getCaisse());
+
         return saved;
     }
 
-    // ─── SUPPRIMER ───────────────────────────────────────────────
+    // ─── ARCHIVER (au lieu de supprimer) ─────────────────────────
+    // L'opération passe à archivee=true et disparaît du tableau principal
+    // Elle n'impacte plus la caisse (les requêtes SQL excluent archivee=true)
     @Transactional
-    public void supprimer(Long id) {
+    public void archiver(Long id) {
         Operation op = operationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Opération introuvable : " + id));
         String caisse = op.getCaisse();
-        operationRepository.deleteById(id);
+
+        op.setArchivee(true);
+        op.setDateArchivage(LocalDate.now());
+        operationRepository.save(op);
+
+        // Recalculer : l'opération archivée est maintenant exclue
         recalculer(caisse);
     }
 
-    // ─── AJOUTER UN CHAMP ────────────────────────────────────────
+    // ─── RESTAURER depuis les archives ───────────────────────────
+    @Transactional
+    public void restaurer(Long id) {
+        Operation op = operationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Opération introuvable : " + id));
+
+        op.setArchivee(false);
+        op.setDateArchivage(null);
+        operationRepository.save(op);
+
+        // Recalculer : l'opération réintègre la caisse
+        recalculer(op.getCaisse());
+    }
+
+    // ─── SUPPRIMER DÉFINITIVEMENT (depuis les archives) ──────────
+    @Transactional
+    public void supprimerDefinitivement(Long id) {
+        Operation op = operationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Opération introuvable : " + id));
+        if (!op.isArchivee())
+            throw new RuntimeException("Seules les opérations archivées peuvent être supprimées définitivement.");
+        operationRepository.deleteById(id);
+        // Pas besoin de recalculer : l'op était déjà archivée (exclue)
+    }
+
+    // ─── CHAMPS DYNAMIQUES ───────────────────────────────────────
     @Transactional
     public ChampDynamique ajouterChamp(String nomChamp) {
         if (nomChamp == null || nomChamp.isBlank())
@@ -102,7 +143,6 @@ public class OperationService {
         return champRepository.save(ChampDynamique.builder().nomChamp(nom).ordre(ordre).build());
     }
 
-    // ─── SUPPRIMER UN CHAMP ──────────────────────────────────────
     @Transactional
     public void supprimerChamp(Long id) {
         champRepository.findById(id)
@@ -110,96 +150,64 @@ public class OperationService {
         champRepository.deleteById(id);
     }
 
-    // ─── LISTER LES CHAMPS ───────────────────────────────────────
     public List<ChampDynamique> listerChamps() {
         return champRepository.findAllByOrderByOrdreAsc();
     }
 
-    // ─── LIRE LES VALEURS DYNAMIQUES D'UNE OPÉRATION ─────────────
     public Map<String, String> getValeursDynamiques(Operation op) {
         return jsonToMap(op.getValeursDynamiques());
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // JSON MANUEL — pas de dépendance externe
-    // Map {"Référence":"REF-001","Projet":"BM"} ↔ String JSON
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Convertit une Map<String,String> en JSON string.
-     * Ex: {"Référence":"REF-001","Projet":"Bestmobile"}
-     */
+    // ─── JSON manuel ─────────────────────────────────────────────
     public String mapToJson(Map<String, String> map) {
         if (map == null || map.isEmpty()) return "{}";
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getKey() == null) continue;
+        for (Map.Entry<String, String> e : map.entrySet()) {
+            if (e.getKey() == null) continue;
             if (!first) sb.append(",");
-            sb.append("\"").append(escapeJson(entry.getKey())).append("\":");
-            sb.append("\"").append(escapeJson(entry.getValue() != null ? entry.getValue() : "")).append("\"");
+            sb.append("\"").append(escapeJson(e.getKey())).append("\":");
+            sb.append("\"").append(escapeJson(e.getValue() != null ? e.getValue() : "")).append("\"");
             first = false;
         }
         sb.append("}");
         return sb.toString();
     }
 
-    /**
-     * Parse un JSON string en Map<String,String>.
-     * Supporte uniquement le format plat {"clé":"valeur",...}
-     */
     public Map<String, String> jsonToMap(String json) {
         Map<String, String> result = new LinkedHashMap<>();
         if (json == null || json.isBlank() || json.trim().equals("{}")) return result;
-
         String content = json.trim();
-        // Enlever les accolades
         if (content.startsWith("{")) content = content.substring(1);
         if (content.endsWith("}"))   content = content.substring(0, content.length() - 1);
         content = content.trim();
         if (content.isEmpty()) return result;
-
-        // Parser chaque paire "clé":"valeur"
         int i = 0;
         while (i < content.length()) {
-            // Chercher la clé
-            int ks = content.indexOf('"', i);
-            if (ks < 0) break;
-            int ke = content.indexOf('"', ks + 1);
-            if (ke < 0) break;
+            int ks = content.indexOf('"', i);       if (ks < 0) break;
+            int ke = content.indexOf('"', ks + 1);  if (ke < 0) break;
             String key = unescapeJson(content.substring(ks + 1, ke));
-
-            // Chercher le ":"
-            int colon = content.indexOf(':', ke);
-            if (colon < 0) break;
-
-            // Chercher la valeur
-            int vs = content.indexOf('"', colon);
-            if (vs < 0) break;
+            int colon = content.indexOf(':', ke);   if (colon < 0) break;
+            int vs = content.indexOf('"', colon);   if (vs < 0) break;
             int ve = vs + 1;
-            // Gérer les guillemets échappés
             while (ve < content.length()) {
                 if (content.charAt(ve) == '"' && content.charAt(ve - 1) != '\\') break;
                 ve++;
             }
-            String value = unescapeJson(content.substring(vs + 1, ve));
-
-            result.put(key, value);
+            result.put(key, unescapeJson(content.substring(vs + 1, ve)));
             i = ve + 1;
-            // Sauter la virgule
             while (i < content.length() && (content.charAt(i) == ',' || content.charAt(i) == ' ')) i++;
         }
         return result;
     }
 
     private String escapeJson(String s) {
-        return s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+        return s.replace("\\","\\\\").replace("\"","\\\"")
+                .replace("\n","\\n").replace("\r","\\r").replace("\t","\\t");
     }
-
     private String unescapeJson(String s) {
-        return s.replace("\\\"", "\"").replace("\\\\", "\\")
-                .replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t");
+        return s.replace("\\\"","\"").replace("\\\\","\\")
+                .replace("\\n","\n").replace("\\r","\r").replace("\\t","\t");
     }
 
     // ─── Validation ──────────────────────────────────────────────
@@ -207,18 +215,15 @@ public class OperationService {
         if (nature == null || nature.isBlank())
             throw new RuntimeException("❌ La Nature de Flux est obligatoire.");
         if (!NATURES_VALIDES.contains(nature))
-            throw new RuntimeException("❌ Nature invalide : \"" + nature + "\". Valeurs acceptées : "
-                    + String.join(", ", NATURES_VALIDES));
+            throw new RuntimeException("❌ Nature invalide : \"" + nature + "\".");
     }
-
-    private void verifierCaisse(String nomCaisse) {
-        if (nomCaisse != null && !nomCaisse.isBlank())
-            caisseRepository.findByNom(nomCaisse)
-                    .orElseThrow(() -> new RuntimeException("Caisse introuvable : \"" + nomCaisse + "\""));
+    private void verifierCaisse(String nom) {
+        if (nom != null && !nom.isBlank())
+            caisseRepository.findByNom(nom)
+                    .orElseThrow(() -> new RuntimeException("Caisse introuvable : \"" + nom + "\""));
     }
-
-    private void recalculer(String nomCaisse) {
-        if (nomCaisse != null && !nomCaisse.isBlank())
-            caisseService.recalculerTotaux(nomCaisse);
+    private void recalculer(String nom) {
+        if (nom != null && !nom.isBlank())
+            caisseService.recalculerTotaux(nom);
     }
 }

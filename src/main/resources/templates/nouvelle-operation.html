@@ -72,10 +72,13 @@
                 <div class="row-label">N° Op.</div>
                 <div class="row-value readonly">Automatique</div>
             </div>
-            <div class="form-row no-click">
+            <div class="form-row no-click" style="cursor:default">
                 <div class="row-label">Date d'Opération</div>
-                <div class="row-value readonly"
-                     th:text="${#temporals.format(#temporals.createNow(),'dd/MM/yyyy')}">--/--/----</div>
+                <div class="row-value" style="background:#dde4ea;padding:0 8px">
+                    <input type="date" id="date-picker"
+                           th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"
+                           style="border:none;background:transparent;color:#1a2e3b;font-size:13px;font-weight:500;font-family:inherit;width:100%;cursor:pointer;outline:none"/>
+                </div>
             </div>
             <div class="form-row" data-field="natureFlux"    data-label="Nature de Flux"  onclick="selectField(this)"><div class="row-label">Nature de Flux <span class="plus-icon">+</span></div><div class="row-value empty" id="val-natureFlux"></div></div>
             <div class="form-row" data-field="caisse"        data-label="Caisse"           onclick="selectField(this)"><div class="row-label">Caisse <span class="plus-icon">+</span></div><div class="row-value empty" id="val-caisse"></div></div>
@@ -145,7 +148,7 @@
     <input type="hidden" name="designation"   id="f-designation"/>
     <input type="hidden" name="description"   id="f-description"/>
     <input type="hidden" name="etat"          id="f-etat"/>
-    <input type="hidden" name="dateFlux"      id="f-dateFlux"
+    <input type="hidden" name="dateFlux" id="f-dateFlux"
            th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"/>
     <!-- Inputs cachés pour champs dynamiques — générés par Thymeleaf (pas par JS) -->
     <!-- Le JS met à jour leur valeur via getElementById avant de soumettre -->
@@ -239,12 +242,16 @@
         if (!formValues.natureFlux) { alert('⚠️ Veuillez remplir : Nature de Flux'); return; }
         if (!formValues.caisse)     { alert('⚠️ Veuillez remplir : Caisse');          return; }
         if (!formValues.montant)    { alert('⚠️ Veuillez remplir : Montant');          return; }
+        // Lire la date depuis le date picker et la copier dans l'input caché
+        const datePicker = document.getElementById('date-picker');
+        if (!datePicker.value) { alert('⚠️ Veuillez choisir une date.'); return; }
+        document.getElementById('f-dateFlux').value = datePicker.value;
         // Remplir les champs fixes
         fixedFields.forEach(k => {
             const i = document.getElementById('f-' + k);
             if (i) i.value = formValues[k] || '';
         });
-        // Remplir les inputs cachés dynamiques (créés par Thymeleaf, id = f-champ_NomDuChamp)
+        // Remplir les inputs cachés dynamiques
         Object.keys(formValues).forEach(k => {
             if (k.startsWith('champ_')) {
                 const i = document.getElementById('f-' + k);

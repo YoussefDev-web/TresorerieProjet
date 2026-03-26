@@ -13,41 +13,44 @@ import java.util.List;
 @Repository
 public interface OperationRepository extends JpaRepository<Operation, Long> {
 
-    // ─── Filtres ──────────────────────────────────────────────────
-    List<Operation> findByCaisse(String caisse);
-    List<Operation> findByNatureFlux(String natureFlux);
-    List<Operation> findByEtat(String etat);
-    List<Operation> findByDateFluxBetween(LocalDate debut, LocalDate fin);
+    // ─── Opérations ACTIVES (non archivées) ──────────────────────
+    List<Operation> findByArchiveeFalse();
+    List<Operation> findByCaisseAndArchiveeFalse(String caisse);
+    List<Operation> findByNatureFluxAndArchiveeFalse(String natureFlux);
+    List<Operation> findByEtatAndArchiveeFalse(String etat);
+    List<Operation> findByDateFluxBetweenAndArchiveeFalse(LocalDate debut, LocalDate fin);
+
+    // ─── Opérations ARCHIVÉES ─────────────────────────────────────
+    List<Operation> findByArchiveeTrue();
 
     // ─────────────────────────────────────────────────────────────
-    // Totaux par caisse selon nature de flux
-    // Ces requêtes sont appelées par CaisseService.recalculerTotaux()
-    // après chaque ajout / modification / suppression d'opération
+    // Totaux pour recalcul de caisse :
+    //   - exclut les opérations ARCHIVÉES (archivee = false)
+    //   - exclut les opérations ANNULÉES  (etat != 'Annulé')
     // ─────────────────────────────────────────────────────────────
 
-    // Somme des Encaissements
     @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
-            "WHERE o.caisse = :caisse AND o.natureFlux = 'Encaissement'")
+            "WHERE o.caisse = :caisse AND o.natureFlux = 'Encaissement' " +
+            "AND o.archivee = false AND (o.etat IS NULL OR o.etat <> 'Annulé')")
     BigDecimal sumEncaissementByCaisse(@Param("caisse") String caisse);
 
-    // Somme des Décaissements
     @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
-            "WHERE o.caisse = :caisse AND o.natureFlux = 'Décaissement'")
+            "WHERE o.caisse = :caisse AND o.natureFlux = 'Décaissement' " +
+            "AND o.archivee = false AND (o.etat IS NULL OR o.etat <> 'Annulé')")
     BigDecimal sumDecaissementByCaisse(@Param("caisse") String caisse);
 
-    // Somme des Créances
     @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
-            "WHERE o.caisse = :caisse AND o.natureFlux = 'Créance'")
+            "WHERE o.caisse = :caisse AND o.natureFlux = 'Créance' " +
+            "AND o.archivee = false AND (o.etat IS NULL OR o.etat <> 'Annulé')")
     BigDecimal sumCreanceByCaisse(@Param("caisse") String caisse);
 
-    // Somme des Dettes
     @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
-            "WHERE o.caisse = :caisse AND o.natureFlux = 'Dette'")
+            "WHERE o.caisse = :caisse AND o.natureFlux = 'Dette' " +
+            "AND o.archivee = false AND (o.etat IS NULL OR o.etat <> 'Annulé')")
     BigDecimal sumDetteByCaisse(@Param("caisse") String caisse);
 
-    // Somme des Soldes de départ
-    // → ajouté directement au cashDisponible comme base de départ
     @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
-            "WHERE o.caisse = :caisse AND o.natureFlux = 'Solde de départ'")
+            "WHERE o.caisse = :caisse AND o.natureFlux = 'Solde de départ' " +
+            "AND o.archivee = false AND (o.etat IS NULL OR o.etat <> 'Annulé')")
     BigDecimal sumSoldeDepartByCaisse(@Param("caisse") String caisse);
 }

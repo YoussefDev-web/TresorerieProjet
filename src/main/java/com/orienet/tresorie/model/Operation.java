@@ -54,8 +54,18 @@ public class Operation {
     @Column(name = "Etat")
     private String etat;
 
-    // Stocke les valeurs des champs dynamiques en JSON
-    // Exemple : {"Référence":"REF-001","Projet":"Bestmobile"}
+    // JSON des valeurs des champs dynamiques
     @Column(name = "valeurs_dynamiques", columnDefinition = "TEXT")
     private String valeursDynamiques;
+
+    // ── Archivage ──────────────────────────────────────────────────
+    // true  = opération archivée (n'apparaît plus dans le tableau principal)
+    // false = opération active (par défaut)
+    @Column(name = "archivee", nullable = false)
+    @Builder.Default
+    private boolean archivee = false;
+
+    // Date à laquelle l'opération a été archivée
+    @Column(name = "date_archivage")
+    private LocalDate dateArchivage;
 }

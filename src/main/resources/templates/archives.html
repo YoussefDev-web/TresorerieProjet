@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Archives</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#14202b;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:#14202b}
+        ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
+
+        .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1e3245;background:#0f1e2b}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .dot{width:7px;height:7px;border-radius:50%;background:#e8a030;box-shadow:0 0 6px #e8a030}
+        .header h1{font-size:16px;font-weight:700;letter-spacing:.1em;color:#e8a030}
+        .back-btn{background:#223347;border:1px solid #2a4155;color:#b0cde0;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;transition:background .15s}
+        .back-btn:hover{background:#2a4155}
+
+        .alert{margin:10px 20px 0;padding:9px 14px;border-radius:4px;font-size:12.5px}
+        .alert-success{background:#14532d22;border:1px solid #14532d;color:#4ade80}
+        .alert-error{background:#7f1d1d22;border:1px solid #7f1d1d;color:#f87171}
+
+        .page-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0}
+        .page-header h2{font-size:15px;font-weight:700;color:#e2e8f0}
+        .badge{background:#2a1f0f;border:1px solid #5a3a10;color:#e8a030;font-size:11px;padding:3px 10px;border-radius:20px;font-family:'IBM Plex Mono',monospace}
+
+        .info-box{margin:12px 20px 0;background:#1b2d3d;border:1px solid #2a4155;border-left:3px solid #e8a030;border-radius:4px;padding:10px 14px;font-size:12px;color:#7fa3be;line-height:1.7}
+        .info-box strong{color:#e8a030}
+
+        .table-wrap{margin:14px 20px 32px;border:1px solid #2a4155;border-radius:5px;overflow-x:auto}
+        .arch-tbl{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+        .arch-tbl thead tr{background:#1b2d3d}
+        .arch-tbl thead th{padding:8px 8px;text-align:left;color:#7fa3be;font-weight:600;font-size:11px;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap}
+        .arch-tbl thead th:last-child{border-right:none}
+        .arch-tbl thead th.dyn{color:#e8a030}
+        .arch-tbl thead th.th-date-arch{color:#e8a030}
+        .arch-tbl tbody tr{border-bottom:1px solid #1e3245;opacity:.8}
+        .arch-tbl tbody tr:nth-child(even){background:#1b2d3d}
+        .arch-tbl tbody tr:nth-child(odd){background:#14202b}
+        .arch-tbl tbody tr:hover{background:#1e3345 !important;opacity:1}
+        .arch-tbl tbody td{padding:6px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;border-right:1px solid #1e3245;color:#8a9bb0}
+        .arch-tbl tbody td:last-child{border-right:none}
+        .c-id{color:#4fa8e8 !important;font-family:'IBM Plex Mono',monospace;font-weight:600}
+        .c-amt{text-align:right;font-family:'IBM Plex Mono',monospace;color:#7fa3be !important}
+        .c-date-arch{color:#e8a030 !important;font-family:'IBM Plex Mono',monospace;font-size:10.5px}
+        .ev{background:#14532d22;color:#4ade80;border:1px solid #14532d55;padding:2px 6px;border-radius:20px;font-size:10px}
+        .ea{background:#78350f22;color:#fbbf24;border:1px solid #78350f55;padding:2px 6px;border-radius:20px;font-size:10px}
+        .en{background:#4a1a1a44;color:#f87171;border:1px solid #7f1d1d55;padding:2px 6px;border-radius:20px;font-size:10px}
+
+        .tools{display:flex;gap:4px}
+        .act{background:transparent;border:1px solid #1e3245;border-radius:3px;padding:3px 7px;font-size:11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:background .1s;white-space:nowrap;color:#c8daea}
+        .act:hover{background:#223347}
+        .act-restore{color:#3ec97a;border-color:#14532d55}
+        .act-restore:hover{background:#14532d22}
+        .act-del{color:#f87171;border-color:#7f1d1d55}
+        .act-del:hover{background:#7f1d1d22}
+
+        .empty-state{text-align:center;padding:48px 20px;color:#4a6a82}
+        .empty-state span{font-size:36px;display:block;margin-bottom:12px}
+        .empty-state p{font-size:13px;line-height:1.8}
+        .empty-state a{color:#4fa8e8;text-decoration:none}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <div class="dot"></div>
+        <h1>📦 ARCHIVES</h1>
+    </div>
+    <a href="/flux-tresorerie" class="back-btn">← Retour au tableau de bord</a>
+</div>
+
+<div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
+<div th:if="${erreur}" class="alert alert-error"   th:text="${erreur}"></div>
+
+<div class="page-header">
+    <h2>Opérations archivées</h2>
+    <span class="badge" th:text="${#lists.size(operations)} + ' opération(s)'">0 opération(s)</span>
+</div>
+
+<div class="table-wrap">
+    <table class="arch-tbl">
+        <thead>
+        <tr>
+            <th style="width:42px">N° Op.</th>
+            <th style="width:85px">Date archivage</th>
+            <th style="width:78px">Date op.</th>
+            <th style="width:100px">Nature de Flux</th>
+            <th style="width:90px">Caisse</th>
+            <th style="width:80px">Mode de Flux</th>
+            <th style="width:90px">Titulaire</th>
+            <th style="width:82px">Montant (dh)</th>
+            <th style="width:60px">CC/P</th>
+            <th style="width:70px">Famille</th>
+            <th style="width:80px">Désignation</th>
+            <th style="width:72px">Etat</th>
+            <th th:each="ch : ${champsDynamiques}" class="dyn" style="width:80px" th:text="${ch.nomChamp}">—</th>
+            <th style="width:110px">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="op : ${operations}">
+            <td class="c-id"       th:text="${op.id}">—</td>
+            <td class="c-date-arch" th:text="${op.dateArchivage != null} ? ${#temporals.format(op.dateArchivage,'dd/MM/yyyy')} : '—'">—</td>
+            <td th:text="${op.dateFlux != null} ? ${#temporals.format(op.dateFlux,'dd/MM/yyyy')} : ''">—</td>
+            <td th:text="${op.natureFlux}">—</td>
+            <td th:text="${op.caisse}">—</td>
+            <td th:text="${op.modeFlux}">—</td>
+            <td th:text="${op.titulaireFlux}">—</td>
+            <td class="c-amt" th:text="${op.montant != null} ? ${#numbers.formatDecimal(op.montant,1,'POINT',2,'COMMA')} : ''">—</td>
+            <td th:text="${op.ccp}">—</td>
+            <td th:text="${op.famille}">—</td>
+            <td th:text="${op.designation}">—</td>
+            <td>
+                <span th:if="${op.etat == 'Validé'}"     class="ev">✓ Validé</span>
+                <span th:if="${op.etat == 'En attente'}" class="ea">⏳ Attente</span>
+                <span th:if="${op.etat == 'Annulé'}"     class="en">✕ Annulé</span>
+            </td>
+            <td th:each="ch : ${champsDynamiques}"
+                th:text="${valeursDynMap[op.id] != null} ? ${valeursDynMap[op.id][ch.nomChamp]} : ''">—</td>
+            <td>
+                <div class="tools">
+                    <!-- Restaurer : remet l'opération dans le tableau principal -->
+                    <a th:href="@{/archives/restaurer/{id}(id=${op.id})}"
+                       class="act act-restore" title="Restaurer">↩️ Restaurer</a>
+                    <!-- Supprimer définitivement -->
+                    <a th:href="@{/archives/supprimer/{id}(id=${op.id})}"
+                       class="act act-del" title="Supprimer définitivement"
+                       onclick="return confirm('Supprimer définitivement ? Cette action est irréversible.')">🗑️</a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Etat vide -->
+        <tr th:if="${#lists.isEmpty(operations)}">
+            <td th:colspan="${13 + #lists.size(champsDynamiques)}" style="padding:0;border:none">
+                <div class="empty-state">
+                    <span>📭</span>
+                    <p>Aucune opération archivée.<br/>
+                        Les opérations que vous archivez depuis le <a href="/flux-tresorerie">tableau de bord</a> apparaissent ici.</p>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

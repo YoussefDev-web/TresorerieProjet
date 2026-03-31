@@ -90,20 +90,19 @@ public class OperationService {
     }
 
     // ─── ARCHIVER (au lieu de supprimer) ─────────────────────────
-    // L'opération passe à archivee=true et disparaît du tableau principal
-    // Elle n'impacte plus la caisse (les requêtes SQL excluent archivee=true)
+    // L'opération passe à archivee=true → disparaît du tableau principal
+    // La caisse N'EST PAS recalculée : le montant reste comptabilisé
     @Transactional
     public void archiver(Long id) {
         Operation op = operationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Opération introuvable : " + id));
-        String caisse = op.getCaisse();
 
         op.setArchivee(true);
         op.setDateArchivage(LocalDate.now());
         operationRepository.save(op);
 
-        // Recalculer : l'opération archivée est maintenant exclue
-        recalculer(caisse);
+        // PAS de recalcul intentionnel :
+        // Caisse 11000 + archive op 1000 → caisse reste 11000
     }
 
     // ─── RESTAURER depuis les archives ───────────────────────────

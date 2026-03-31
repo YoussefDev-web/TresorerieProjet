@@ -1,266 +1,553 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title>Nouvelle Opération</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#1a2e3b;font-family:'Segoe UI',sans-serif;color:#e2e8f0;min-height:100vh}
-        .header{background:#0f2030;padding:14px 28px;border-bottom:2px solid #1e3a50;display:flex;align-items:center;gap:12px}
-        .header h1{font-size:17px;font-weight:700;letter-spacing:.08em}
-        .back-btn{margin-left:auto;background:#1e3a50;border:1px solid #2d5a7a;color:#b0cde0;padding:6px 14px;border-radius:5px;text-decoration:none;font-size:12.5px}
-        .back-btn:hover{background:#2d5a7a}
-        .alert{padding:10px 16px;border-radius:6px;font-size:13px;margin:12px 28px 0}
-        .alert-success{background:#14532d33;border:1px solid #14532d;color:#86efac}
-        .alert-error{background:#7f1d1d33;border:1px solid #7f1d1d;color:#fca5a5}
-        .main{display:flex;gap:60px;padding:22px 28px;align-items:flex-start}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
 
-        .form-card{background:#1e3345;border:1px solid #2a4a60;border-radius:6px;width:430px;flex-shrink:0;overflow:hidden}
-        .form-row{display:flex;align-items:stretch;border-bottom:1px solid #2a4a60;cursor:pointer;transition:background .15s;min-height:40px}
-        .form-row:hover{background:#243d54}
-        .form-row.active{background:#1a3550;outline:2px solid #3b82f6;outline-offset:-2px}
-        .form-row.no-click{cursor:default}
-        .form-row.no-click:hover{background:transparent}
-        .form-row.dyn-row{border-left:3px solid #e8a030}
-        .row-label{background:#1a2e3b;color:#e2e8f0;font-size:12.5px;font-weight:500;padding:0 12px;width:170px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-right:1px solid #2a4a60}
-        .row-label.dyn{color:#e8a030}
-        .plus-icon{color:#4ade80;font-size:15px;font-weight:700}
-        .row-value{flex:1;background:#dde4ea;color:#1a2e3b;font-size:13px;padding:0 12px;display:flex;align-items:center;font-weight:500;min-height:40px}
-        .row-value.empty{background:#c8d5de}
-        .row-value.readonly{background:#b8c8d4;color:#334155;font-size:12px}
-        .dyn-sep{padding:6px 12px;background:#0f1e2b;font-size:10.5px;font-weight:700;color:#e8a030;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid #2a4a60}
-        .form-footer{background:#1e3345;padding:10px 14px;display:flex;justify-content:flex-end;border-top:1px solid #2a4a60}
-        .save-btn{background:#166534;border:none;color:#fff;padding:8px 20px;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
-        .save-btn:hover{background:#15803d}
+        body {
+            background: #1a2e3b;
+            font-family: 'Segoe UI', sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh
+        }
 
-        .right-panel{flex:1;display:flex;flex-direction:column;gap:36px;padding-top:4px}
-        .panel-title{font-size:13px;font-weight:600;color:#f0c040;margin-bottom:12px}
-        .add-row{display:flex;align-items:center;gap:10px}
-        #add-input{background:#dde4ea;border:none;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;font-family:inherit}
-        #add-input:focus{outline:2px solid #3b82f6}
-        #add-input::placeholder{color:#7a9ab0}
-        #add-input:disabled{background:#b8c8d4;color:#7a9ab0;cursor:not-allowed}
-        #add-select{background:#dde4ea;border:none;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;font-family:inherit;cursor:pointer;display:none}
-        .remove-row{display:flex;align-items:center;gap:10px}
-        .remove-box{background:#dde4ea;color:#1a2e3b;padding:9px 13px;border-radius:5px;font-size:13px;width:240px;min-height:38px;display:flex;align-items:center;font-weight:500}
-        .remove-box.empty{color:#7a9ab0;font-style:italic;font-weight:400}
-        .icon-btn{background:#1e3a50;border:1px solid #2d5a7a;color:#4ade80;width:36px;height:36px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background .15s}
-        .icon-btn:hover{background:#2d5a7a}
-        .icon-btn.del{color:#f87171;border-color:#7f1d1d55}
-        .icon-btn.del:hover{background:#7f1d1d55}
-        .icon-btn:disabled{opacity:.3;cursor:not-allowed}
-        .hint{font-size:11px;color:#475569;margin-top:8px}
+        .header {
+            background: #0f2030;
+            padding: 14px 28px;
+            border-bottom: 2px solid #1e3a50;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .header h1 {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: .08em
+        }
+
+        .back-btn {
+            margin-left: auto;
+            background: #1e3a50;
+            border: 1px solid #2d5a7a;
+            color: #b0cde0;
+            padding: 6px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 12.5px
+        }
+
+        .back-btn:hover {
+            background: #2d5a7a
+        }
+
+        .alert {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin: 12px 28px 0
+        }
+
+        .alert-success {
+            background: #14532d33;
+            border: 1px solid #14532d;
+            color: #86efac
+        }
+
+        .alert-error {
+            background: #7f1d1d33;
+            border: 1px solid #7f1d1d;
+            color: #fca5a5
+        }
+
+        .main {
+            display: flex;
+            gap: 60px;
+            padding: 22px 28px;
+            align-items: flex-start
+        }
+
+        .form-card {
+            background: #1e3345;
+            border: 1px solid #2a4a60;
+            border-radius: 6px;
+            width: 430px;
+            flex-shrink: 0;
+            overflow: hidden
+        }
+
+        .form-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid #2a4a60;
+            cursor: pointer;
+            transition: background .15s;
+            min-height: 40px
+        }
+
+        .form-row:hover {
+            background: #243d54
+        }
+
+        .form-row.active {
+            background: #1a3550;
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px
+        }
+
+        .form-row.no-click {
+            cursor: default
+        }
+
+        .form-row.no-click:hover {
+            background: transparent
+        }
+
+        .row-label {
+            background: #1a2e3b;
+            color: #e2e8f0;
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 0 12px;
+            width: 170px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-right: 1px solid #2a4a60
+        }
+
+        .plus-icon {
+            color: #4ade80;
+            font-size: 15px;
+            font-weight: 700
+        }
+
+        .row-value {
+            flex: 1;
+            background: #dde4ea;
+            color: #1a2e3b;
+            font-size: 13px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            min-height: 40px
+        }
+
+        .row-value.empty {
+            background: #c8d5de
+        }
+
+        .row-value.readonly {
+            background: #b8c8d4;
+            color: #334155;
+            font-size: 12px
+        }
+
+        .dyn-sep {
+            padding: 6px 12px;
+            background: #0f1e2b;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #e8a030;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            border-bottom: 1px solid #2a4a60
+        }
+
+        .form-footer {
+            background: #1e3345;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid #2a4a60
+        }
+
+        .save-btn {
+            background: #166534;
+            border: none;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit
+        }
+
+        .save-btn:hover {
+            background: #15803d
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            padding-top: 4px
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f0c040;
+            margin-bottom: 12px
+        }
+
+        .add-row {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        #add-input {
+            background: #dde4ea;
+            border: none;
+            color: #1a2e3b;
+            padding: 9px 13px;
+            border-radius: 5px;
+            font-size: 13px;
+            width: 240px;
+            font-family: inherit
+        }
+
+        #add-input:focus {
+            outline: 2px solid #3b82f6
+        }
+
+        #add-input::placeholder {
+            color: #7a9ab0
+        }
+
+        #add-input:disabled {
+            background: #b8c8d4;
+            color: #7a9ab0;
+            cursor: not-allowed
+        }
+
+        #add-select {
+            background: #dde4ea;
+            border: none;
+            color: #1a2e3b;
+            padding: 9px 13px;
+            border-radius: 5px;
+            font-size: 13px;
+            width: 240px;
+            font-family: inherit;
+            cursor: pointer;
+            display: none
+        }
+
+        .remove-row {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .remove-box {
+            background: #dde4ea;
+            color: #1a2e3b;
+            padding: 9px 13px;
+            border-radius: 5px;
+            font-size: 13px;
+            width: 240px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            font-weight: 500
+        }
+
+        .remove-box.empty {
+            color: #7a9ab0;
+            font-style: italic;
+            font-weight: 400
+        }
+
+        .icon-btn {
+            background: #1e3a50;
+            border: 1px solid #2d5a7a;
+            color: #4ade80;
+            width: 36px;
+            height: 36px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: background .15s
+        }
+
+        .icon-btn:hover {
+            background: #2d5a7a
+        }
+
+        .icon-btn.del {
+            color: #f87171;
+            border-color: #7f1d1d55
+        }
+
+        .icon-btn.del:hover {
+            background: #7f1d1d55
+        }
+
+        .icon-btn:disabled {
+            opacity: .3;
+            cursor: not-allowed
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 8px
+        }
     </style>
 </head>
+
 <body>
 
-<div class="header">
-    <span style="font-size:18px">💹</span>
-    <h1>FLUX DE TRÉSORERIE — Nouvelle Opération</h1>
-    <a href="/flux-tresorerie" class="back-btn">← Retour</a>
-</div>
+    <div class="header">
+        <span style="font-size:18px">💹</span>
+        <h1>FLUX DE TRÉSORERIE — Nouvelle Opération</h1>
+        <a href="/flux-tresorerie" class="back-btn">← Retour</a>
+    </div>
 
-<div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
-<div th:if="${erreur}"  class="alert alert-error"   th:text="${erreur}"></div>
+    <div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
+    <div th:if="${erreur}" class="alert alert-error" th:text="${erreur}"></div>
 
-<div class="main">
+    <div class="main">
 
-    <!-- FORMULAIRE -->
-    <div>
-        <div class="form-card">
-            <div class="form-row no-click">
-                <div class="row-label">N° Op.</div>
-                <div class="row-value readonly">Automatique</div>
-            </div>
-            <div class="form-row no-click" style="cursor:default">
-                <div class="row-label">Date d'Opération</div>
-                <div class="row-value" style="background:#dde4ea;padding:0 8px">
-                    <input type="date" id="date-picker"
-                           th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"
-                           style="border:none;background:transparent;color:#1a2e3b;font-size:13px;font-weight:500;font-family:inherit;width:100%;cursor:pointer;outline:none"/>
+        <!-- FORMULAIRE -->
+        <div>
+            <div class="form-card">
+                <div class="form-row no-click">
+                    <div class="row-label">N° Op.</div>
+                    <div class="row-value readonly">Automatique</div>
+                </div>
+                <div class="form-row no-click" style="cursor:default">
+                    <div class="row-label">Date d'Opération</div>
+                    <div class="row-value" style="background:#dde4ea;padding:0 8px">
+                        <input type="date" id="date-picker"
+                            th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"
+                            style="border:none;background:transparent;color:#1a2e3b;font-size:13px;font-weight:500;font-family:inherit;width:100%;cursor:pointer;outline:none" />
+                    </div>
+                </div>
+                <div class="form-row" data-field="natureFlux" data-label="Nature de Flux" onclick="selectField(this)">
+                    <div class="row-label">Nature de Flux <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-natureFlux"></div>
+                </div>
+                <div class="form-row" data-field="caisse" data-label="Caisse" onclick="selectField(this)">
+                    <div class="row-label">Caisse <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-caisse"></div>
+                </div>
+                <div class="form-row" data-field="modeFlux" data-label="Mode de Flux" onclick="selectField(this)">
+                    <div class="row-label">Mode de Flux <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-modeFlux"></div>
+                </div>
+                <div class="form-row" data-field="titulaireFlux" data-label="Titulaire" onclick="selectField(this)">
+                    <div class="row-label">Titulaire <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-titulaireFlux"></div>
+                </div>
+                <div class="form-row" data-field="montant" data-label="Montant (dh)" onclick="selectField(this)">
+                    <div class="row-label">Montant (dh) <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-montant"></div>
+                </div>
+                <div class="form-row" data-field="ccp" data-label="CC/P" onclick="selectField(this)">
+                    <div class="row-label">CC/P <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-ccp"></div>
+                </div>
+                <div class="form-row" data-field="famille" data-label="Famille" onclick="selectField(this)">
+                    <div class="row-label">Famille <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-famille"></div>
+                </div>
+                <div class="form-row" data-field="designation" data-label="Désignation" onclick="selectField(this)">
+                    <div class="row-label">Désignation <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-designation"></div>
+                </div>
+                <div class="form-row" data-field="description" data-label="Description" onclick="selectField(this)">
+                    <div class="row-label">Description <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-description"></div>
+                </div>
+                <div class="form-row" data-field="etat" data-label="Etat" onclick="selectField(this)">
+                    <div class="row-label">Etat <span class="plus-icon">+</span></div>
+                    <div class="row-value empty" id="val-etat"></div>
+                </div>
+
+                <!-- Champs dynamiques -->
+                <div th:each="ch : ${champsDynamiques}" class="form-row" th:data-field="${'champ_' + ch.nomChamp}"
+                    th:data-label="${ch.nomChamp}" onclick="selectField(this)">
+                    <div class="row-label"><span th:text="${ch.nomChamp}">—</span> <span class="plus-icon">+</span>
+                    </div>
+                    <div class="row-value empty" th:id="${'val-champ_' + ch.nomChamp}"></div>
+                </div>
+
+                <div class="form-footer">
+                    <button class="save-btn" onclick="submitForm()">💾 Enregistrer</button>
                 </div>
             </div>
-            <div class="form-row" data-field="natureFlux"    data-label="Nature de Flux"  onclick="selectField(this)"><div class="row-label">Nature de Flux <span class="plus-icon">+</span></div><div class="row-value empty" id="val-natureFlux"></div></div>
-            <div class="form-row" data-field="caisse"        data-label="Caisse"           onclick="selectField(this)"><div class="row-label">Caisse <span class="plus-icon">+</span></div><div class="row-value empty" id="val-caisse"></div></div>
-            <div class="form-row" data-field="modeFlux"      data-label="Mode de Flux"     onclick="selectField(this)"><div class="row-label">Mode de Flux <span class="plus-icon">+</span></div><div class="row-value empty" id="val-modeFlux"></div></div>
-            <div class="form-row" data-field="titulaireFlux" data-label="Titulaire"        onclick="selectField(this)"><div class="row-label">Titulaire <span class="plus-icon">+</span></div><div class="row-value empty" id="val-titulaireFlux"></div></div>
-            <div class="form-row" data-field="montant"       data-label="Montant (dh)"     onclick="selectField(this)"><div class="row-label">Montant (dh) <span class="plus-icon">+</span></div><div class="row-value empty" id="val-montant"></div></div>
-            <div class="form-row" data-field="ccp"           data-label="CC/P"             onclick="selectField(this)"><div class="row-label">CC/P <span class="plus-icon">+</span></div><div class="row-value empty" id="val-ccp"></div></div>
-            <div class="form-row" data-field="famille"       data-label="Famille"          onclick="selectField(this)"><div class="row-label">Famille <span class="plus-icon">+</span></div><div class="row-value empty" id="val-famille"></div></div>
-            <div class="form-row" data-field="designation"   data-label="Désignation"      onclick="selectField(this)"><div class="row-label">Désignation <span class="plus-icon">+</span></div><div class="row-value empty" id="val-designation"></div></div>
-            <div class="form-row" data-field="description"   data-label="Description"      onclick="selectField(this)"><div class="row-label">Description <span class="plus-icon">+</span></div><div class="row-value empty" id="val-description"></div></div>
-            <div class="form-row" data-field="etat"          data-label="Etat"             onclick="selectField(this)"><div class="row-label">Etat <span class="plus-icon">+</span></div><div class="row-value empty" id="val-etat"></div></div>
+        </div>
 
-            <!-- Champs dynamiques -->
-            <div th:if="${not #lists.isEmpty(champsDynamiques)}" class="dyn-sep">✦ Champs personnalisés</div>
-            <div th:each="ch : ${champsDynamiques}"
-                 class="form-row dyn-row"
-                 th:data-field="${'champ_' + ch.nomChamp}"
-                 th:data-label="${ch.nomChamp}"
-                 onclick="selectField(this)">
-                <div class="row-label dyn" th:text="${ch.nomChamp}">—</div>
-                <div class="row-value empty" th:id="${'val-champ_' + ch.nomChamp}"></div>
+        <!-- PANELS DROITE -->
+        <div class="right-panel">
+            <div>
+                <div class="panel-title" id="add-title">Ajouter une valeur</div>
+                <div class="add-row">
+                    <select id="add-select" onchange="addValue()">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="En attente">En attente</option>
+                        <option value="Validé">Validé</option>
+                        <option value="Annulé">Annulé</option>
+                    </select>
+                    <input id="add-input" type="text" placeholder="Cliquez sur un champ..." disabled
+                        onkeydown="if(event.key==='Enter') addValue()" />
+                    <button class="icon-btn" onclick="addValue()">💾</button>
+                </div>
+                <div class="hint" id="add-hint">← Cliquez sur un champ à gauche</div>
             </div>
-
-            <div class="form-footer">
-                <button class="save-btn" onclick="submitForm()">💾 Enregistrer</button>
+            <div>
+                <div class="panel-title">Retirer la valeur</div>
+                <div class="remove-row">
+                    <div class="remove-box empty" id="remove-box">-- aucun champ sélectionné --</div>
+                    <button class="icon-btn del" id="remove-btn2" onclick="removeValue()" disabled>💾</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- PANELS DROITE -->
-    <div class="right-panel">
-        <div>
-            <div class="panel-title" id="add-title">Ajouter une valeur</div>
-            <div class="add-row">
-                <select id="add-select" onchange="addValue()">
-                    <option value="">-- Sélectionner --</option>
-                    <option value="En attente">En attente</option>
-                    <option value="Validé">Validé</option>
-                    <option value="Annulé">Annulé</option>
-                </select>
-                <input id="add-input" type="text" placeholder="Cliquez sur un champ..." disabled
-                       onkeydown="if(event.key==='Enter') addValue()"/>
-                <button class="icon-btn" onclick="addValue()">💾</button>
-            </div>
-            <div class="hint" id="add-hint">← Cliquez sur un champ à gauche</div>
-        </div>
-        <div>
-            <div class="panel-title">Retirer la valeur</div>
-            <div class="remove-row">
-                <button class="icon-btn del" id="remove-btn" onclick="removeValue()" disabled>🚪</button>
-                <div class="remove-box empty" id="remove-box">-- aucun champ sélectionné --</div>
-                <button class="icon-btn del" id="remove-btn2" onclick="removeValue()" disabled>💾</button>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- Formulaire caché -->
+    <form id="hidden-form" th:action="@{/operations/sauvegarder}" method="post" style="display:none">
+        <input type="hidden" name="natureFlux" id="f-natureFlux" />
+        <input type="hidden" name="caisse" id="f-caisse" />
+        <input type="hidden" name="modeFlux" id="f-modeFlux" />
+        <input type="hidden" name="titulaireFlux" id="f-titulaireFlux" />
+        <input type="hidden" name="montant" id="f-montant" />
+        <input type="hidden" name="ccp" id="f-ccp" />
+        <input type="hidden" name="famille" id="f-famille" />
+        <input type="hidden" name="designation" id="f-designation" />
+        <input type="hidden" name="description" id="f-description" />
+        <input type="hidden" name="etat" id="f-etat" />
+        <input type="hidden" name="dateFlux" id="f-dateFlux"
+            th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}" />
+        <!-- Inputs cachés pour champs dynamiques — générés par Thymeleaf (pas par JS) -->
+        <!-- Le JS met à jour leur valeur via getElementById avant de soumettre -->
+        <input th:each="ch : ${champsDynamiques}" type="hidden" th:name="${'champ_' + ch.nomChamp}"
+            th:id="${'f-champ_' + ch.nomChamp}" value="" />
+    </form>
 
-<!-- Formulaire caché -->
-<form id="hidden-form" th:action="@{/operations/sauvegarder}" method="post" style="display:none">
-    <input type="hidden" name="natureFlux"    id="f-natureFlux"/>
-    <input type="hidden" name="caisse"        id="f-caisse"/>
-    <input type="hidden" name="modeFlux"      id="f-modeFlux"/>
-    <input type="hidden" name="titulaireFlux" id="f-titulaireFlux"/>
-    <input type="hidden" name="montant"       id="f-montant"/>
-    <input type="hidden" name="ccp"           id="f-ccp"/>
-    <input type="hidden" name="famille"       id="f-famille"/>
-    <input type="hidden" name="designation"   id="f-designation"/>
-    <input type="hidden" name="description"   id="f-description"/>
-    <input type="hidden" name="etat"          id="f-etat"/>
-    <input type="hidden" name="dateFlux" id="f-dateFlux"
-           th:value="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"/>
-    <!-- Inputs cachés pour champs dynamiques — générés par Thymeleaf (pas par JS) -->
-    <!-- Le JS met à jour leur valeur via getElementById avant de soumettre -->
-    <input th:each="ch : ${champsDynamiques}"
-           type="hidden"
-           th:name="${'champ_' + ch.nomChamp}"
-           th:id="${'f-champ_' + ch.nomChamp}"
-           value=""/>
-</form>
+    <script>
+        /*<![CDATA[*/
+        const fixedFields = ['natureFlux', 'caisse', 'modeFlux', 'titulaireFlux',
+            'montant', 'ccp', 'famille', 'designation', 'description', 'etat'];
+        const formValues = {};
+        fixedFields.forEach(f => formValues[f] = '');
 
-<script>
-    /*<![CDATA[*/
-    const fixedFields = ['natureFlux','caisse','modeFlux','titulaireFlux',
-        'montant','ccp','famille','designation','description','etat'];
-    const formValues  = {};
-    fixedFields.forEach(f => formValues[f] = '');
-
-    // Noms des champs dynamiques injectés par Thymeleaf
-    // Initialiser formValues pour les champs dynamiques depuis les inputs cachés Thymeleaf
-    // (plus fiable que d'injecter la liste via SpEL dans un commentaire JS)
-    document.querySelectorAll('input[id^="f-champ_"]').forEach(input => {
-        const key = input.id.substring(2); // enlever "f-" → "champ_NomDuChamp"
-        formValues[key] = '';
-    });
-
-    let activeField = null;
-
-    function selectField(row) {
-        document.querySelectorAll('.form-row.active').forEach(r => r.classList.remove('active'));
-        row.classList.add('active');
-        activeField = row.dataset.field;
-        const label  = row.dataset.label;
-        const curVal = formValues[activeField] || '';
-        document.getElementById('add-title').textContent = 'Ajouter : ' + label;
-        document.getElementById('add-hint').textContent  = curVal ? '✏️ Valeur : ' + curVal : '✏️ Tapez et appuyez sur Entrée';
-        const input = document.getElementById('add-input');
-        const sel   = document.getElementById('add-select');
-        if (activeField === 'etat') {
-            input.style.display = 'none'; sel.style.display = 'block';
-            sel.value = curVal; sel.focus();
-        } else {
-            sel.style.display = 'none'; input.style.display = 'block';
-            input.disabled = false;
-            input.type = (activeField === 'montant') ? 'number' : 'text';
-            input.placeholder = 'Saisir ' + label + '...';
-            input.value = curVal; input.focus(); input.select();
-        }
-        const box = document.getElementById('remove-box');
-        const rb  = document.getElementById('remove-btn');
-        const rb2 = document.getElementById('remove-btn2');
-        if (curVal) { box.textContent = curVal; box.classList.remove('empty'); rb.disabled = rb2.disabled = false; }
-        else { box.textContent = '-- vide --'; box.classList.add('empty'); rb.disabled = rb2.disabled = true; }
-    }
-
-    function addValue() {
-        if (!activeField) return;
-        const input = document.getElementById('add-input');
-        const sel   = document.getElementById('add-select');
-        const val   = activeField === 'etat' ? sel.value : input.value.trim();
-        if (!val) { input.style.outline = '2px solid #f87171'; setTimeout(() => input.style.outline = '', 800); return; }
-        formValues[activeField] = val;
-        const d = document.getElementById('val-' + activeField);
-        d.textContent = val; d.classList.remove('empty');
-        const box = document.getElementById('remove-box');
-        box.textContent = val; box.classList.remove('empty');
-        document.getElementById('remove-btn').disabled = false;
-        document.getElementById('remove-btn2').disabled = false;
-        const row = document.querySelector('.form-row.active');
-        if (row) { row.style.background = '#1a4a2a'; setTimeout(() => row.style.background = '', 500);
-            const all = [...document.querySelectorAll('.form-row:not(.no-click)')];
-            const idx = all.indexOf(row);
-            if (idx >= 0 && idx < all.length - 1) setTimeout(() => selectField(all[idx + 1]), 300);
-        }
-    }
-
-    function removeValue() {
-        if (!activeField) return;
-        formValues[activeField] = '';
-        const d = document.getElementById('val-' + activeField);
-        d.textContent = ''; d.classList.add('empty');
-        const box = document.getElementById('remove-box');
-        box.textContent = '-- vide --'; box.classList.add('empty');
-        document.getElementById('remove-btn').disabled = true;
-        document.getElementById('remove-btn2').disabled = true;
-        const input = document.getElementById('add-input');
-        const sel   = document.getElementById('add-select');
-        if (activeField === 'etat') { sel.value = ''; sel.focus(); } else { input.value = ''; input.focus(); }
-    }
-
-    function submitForm() {
-        if (!formValues.natureFlux) { alert('⚠️ Veuillez remplir : Nature de Flux'); return; }
-        if (!formValues.caisse)     { alert('⚠️ Veuillez remplir : Caisse');          return; }
-        if (!formValues.montant)    { alert('⚠️ Veuillez remplir : Montant');          return; }
-        // Lire la date depuis le date picker et la copier dans l'input caché
-        const datePicker = document.getElementById('date-picker');
-        if (!datePicker.value) { alert('⚠️ Veuillez choisir une date.'); return; }
-        document.getElementById('f-dateFlux').value = datePicker.value;
-        // Remplir les champs fixes
-        fixedFields.forEach(k => {
-            const i = document.getElementById('f-' + k);
-            if (i) i.value = formValues[k] || '';
+        // Noms des champs dynamiques injectés par Thymeleaf
+        // Initialiser formValues pour les champs dynamiques depuis les inputs cachés Thymeleaf
+        // (plus fiable que d'injecter la liste via SpEL dans un commentaire JS)
+        document.querySelectorAll('input[id^="f-champ_"]').forEach(input => {
+            const key = input.id.substring(2); // enlever "f-" → "champ_NomDuChamp"
+            formValues[key] = '';
         });
-        // Remplir les inputs cachés dynamiques
-        Object.keys(formValues).forEach(k => {
-            if (k.startsWith('champ_')) {
+
+        let activeField = null;
+
+        function selectField(row) {
+            document.querySelectorAll('.form-row.active').forEach(r => r.classList.remove('active'));
+            row.classList.add('active');
+            activeField = row.dataset.field;
+            const label = row.dataset.label;
+            const curVal = formValues[activeField] || '';
+            document.getElementById('add-title').textContent = 'Ajouter : ' + label;
+            document.getElementById('add-hint').textContent = curVal ? '✏️ Valeur : ' + curVal : '✏️ Tapez et appuyez sur Entrée';
+            const input = document.getElementById('add-input');
+            const sel = document.getElementById('add-select');
+            if (activeField === 'etat') {
+                input.style.display = 'none'; sel.style.display = 'block';
+                sel.value = curVal; sel.focus();
+            } else {
+                sel.style.display = 'none'; input.style.display = 'block';
+                input.disabled = false;
+                input.type = (activeField === 'montant') ? 'number' : 'text';
+                input.placeholder = 'Saisir ' + label + '...';
+                input.value = curVal; input.focus(); input.select();
+            }
+            const box = document.getElementById('remove-box');
+            const rb2 = document.getElementById('remove-btn2');
+            if (curVal) { box.textContent = curVal; box.classList.remove('empty'); rb2.disabled = false; }
+            else { box.textContent = '-- vide --'; box.classList.add('empty'); rb2.disabled = true; }
+        }
+
+        function addValue() {
+            if (!activeField) return;
+            const input = document.getElementById('add-input');
+            const sel = document.getElementById('add-select');
+            const val = activeField === 'etat' ? sel.value : input.value.trim();
+            if (!val) { input.style.outline = '2px solid #f87171'; setTimeout(() => input.style.outline = '', 800); return; }
+            formValues[activeField] = val;
+            const d = document.getElementById('val-' + activeField);
+            d.textContent = val; d.classList.remove('empty');
+            const box = document.getElementById('remove-box');
+            box.textContent = val; box.classList.remove('empty');
+            document.getElementById('remove-btn2').disabled = false;
+            
+            const row = document.querySelector('.form-row.active');
+            if (row) {
+                row.style.background = '#1a4a2a'; setTimeout(() => row.style.background = '', 500);
+                const all = [...document.querySelectorAll('.form-row:not(.no-click)')];
+                const idx = all.indexOf(row);
+                if (idx >= 0 && idx < all.length - 1) setTimeout(() => selectField(all[idx + 1]), 300);
+            }
+        }
+
+        function removeValue() {
+            if (!activeField) return;
+            formValues[activeField] = '';
+            const d = document.getElementById('val-' + activeField);
+            d.textContent = ''; d.classList.add('empty');
+            const box = document.getElementById('remove-box');
+            box.textContent = '-- vide --'; box.classList.add('empty');
+            document.getElementById('remove-btn2').disabled = true;
+            const input = document.getElementById('add-input');
+            const sel = document.getElementById('add-select');
+            if (activeField === 'etat') { sel.value = ''; sel.focus(); } else { input.value = ''; input.focus(); }
+        }
+
+        function submitForm() {
+            if (!formValues.natureFlux) { alert('⚠️ Veuillez remplir : Nature de Flux'); return; }
+            if (!formValues.caisse) { alert('⚠️ Veuillez remplir : Caisse'); return; }
+            if (!formValues.montant) { alert('⚠️ Veuillez remplir : Montant'); return; }
+            // Lire la date depuis le date picker et la copier dans l'input caché
+            const datePicker = document.getElementById('date-picker');
+            if (!datePicker.value) { alert('⚠️ Veuillez choisir une date.'); return; }
+            document.getElementById('f-dateFlux').value = datePicker.value;
+            // Remplir les champs fixes
+            fixedFields.forEach(k => {
                 const i = document.getElementById('f-' + k);
                 if (i) i.value = formValues[k] || '';
-            }
-        });
-        document.getElementById('hidden-form').submit();
-    }
-    /*]]>*/
-</script>
+            });
+            // Remplir les inputs cachés dynamiques
+            Object.keys(formValues).forEach(k => {
+                if (k.startsWith('champ_')) {
+                    const i = document.getElementById('f-' + k);
+                    if (i) i.value = formValues[k] || '';
+                }
+            });
+            document.getElementById('hidden-form').submit();
+        }
+        /*]]>*/
+    </script>
 </body>
+
 </html>

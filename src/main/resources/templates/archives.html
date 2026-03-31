@@ -35,7 +35,6 @@
         .arch-tbl thead tr{background:#1b2d3d}
         .arch-tbl thead th{padding:8px 8px;text-align:left;color:#7fa3be;font-weight:600;font-size:11px;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap}
         .arch-tbl thead th:last-child{border-right:none}
-        .arch-tbl thead th.dyn{color:#e8a030}
         .arch-tbl thead th.th-date-arch{color:#e8a030}
         .arch-tbl tbody tr{border-bottom:1px solid #1e3245;opacity:.8}
         .arch-tbl tbody tr:nth-child(even){background:#1b2d3d}
@@ -98,7 +97,7 @@
             <th style="width:70px">Famille</th>
             <th style="width:80px">Désignation</th>
             <th style="width:72px">Etat</th>
-            <th th:each="ch : ${champsDynamiques}" class="dyn" style="width:80px" th:text="${ch.nomChamp}">—</th>
+            <th th:each="ch : ${champsDynamiques}" style="width:80px" th:text="${ch.nomChamp}">—</th>
             <th style="width:110px">Actions</th>
         </tr>
         </thead>

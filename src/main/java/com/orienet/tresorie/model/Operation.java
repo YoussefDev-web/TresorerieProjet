@@ -1,8 +1,9 @@
 package com.orienet.tresorie.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class Operation {
 
     @NotNull
     @Column(name = "DateOperation")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateFlux;
 
     @Column(name = "NatureFlux")

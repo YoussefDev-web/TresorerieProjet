@@ -1,9 +1,6 @@
 package com.orienet.tresorie.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import javax.persistence.*;
 
 import java.math.BigDecimal;
 

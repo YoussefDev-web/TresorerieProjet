@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Copilote IA — Flux de Trésorerie</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0f1a24;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;height:100vh;display:flex;flex-direction:column}
+
+        /* ── HEADER ── */
+        .header{background:#0a1520;border-bottom:1px solid #1e3245;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+        .header-logo{width:36px;height:36px;background:linear-gradient(135deg,#4fa8e8,#3ec97a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .header-info h1{font-size:16px;font-weight:700;color:#e2e8f0}
+        .header-info p{font-size:11px;color:#4a6a82;margin-top:1px}
+        .header-status{display:flex;align-items:center;gap:6px;margin-left:auto}
+        .status-dot{width:8px;height:8px;border-radius:50%;background:#3ec97a;box-shadow:0 0 8px #3ec97a;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        .status-txt{font-size:12px;color:#3ec97a;font-weight:500}
+        .back-btn{background:#1b2d3d;border:1px solid #2a4155;color:#7fa3be;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;transition:background .15s;margin-left:16px}
+        .back-btn:hover{background:#2a4155}
+
+        /* ── SUGGESTIONS ── */
+        .suggestions-bar{background:#0d1e2c;border-bottom:1px solid #1e3245;padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+        .suggestions-label{font-size:11px;color:#4a6a82;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .chip{background:#1b2d3d;border:1px solid #2a4155;color:#7fb8e8;padding:5px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;transition:all .15s;white-space:nowrap}
+        .chip:hover{background:#2a4155;border-color:#4a7aaa;color:#b0d8f0}
+
+        /* ── CHAT AREA ── */
+        .chat-wrap{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-track{background:#0f1a24}
+        ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
+
+        /* Messages */
+        .msg{display:flex;gap:12px;max-width:82%;animation:fadeIn .3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .msg.user{align-self:flex-end;flex-direction:row-reverse}
+        .msg.ia{align-self:flex-start}
+
+        .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+        .avatar.ia{background:linear-gradient(135deg,#1a4a8a,#1a6a4a);border:2px solid #2a6aaa}
+        .avatar.user{background:#1b2d3d;border:2px solid #2a4155}
+
+        .bubble{padding:12px 16px;border-radius:12px;font-size:13px;line-height:1.7;max-width:100%}
+        .bubble.ia{background:#1b2d3d;border:1px solid #2a4155;border-top-left-radius:2px;color:#c8daea}
+        .bubble.user{background:#1a4a8a;border:1px solid #2a6aaa;border-top-right-radius:2px;color:#d0e8ff}
+        .bubble .meta{font-size:10.5px;color:#4a6a82;margin-top:6px}
+
+        /* Typing indicator */
+        .typing-bubble{display:flex;align-items:center;gap:5px;padding:12px 16px}
+        .typing-dot{width:7px;height:7px;border-radius:50%;background:#4a6a82;animation:bounce .8s infinite}
+        .typing-dot:nth-child(2){animation-delay:.15s}
+        .typing-dot:nth-child(3){animation-delay:.3s}
+        @keyframes bounce{0%,80%,100%{transform:scale(0.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+
+        /* Message d'accueil */
+        .welcome{text-align:center;padding:32px 20px;color:#4a6a82}
+        .welcome .icon{font-size:48px;display:block;margin-bottom:12px}
+        .welcome h2{font-size:18px;font-weight:700;color:#7fa3be;margin-bottom:8px}
+        .welcome p{font-size:13px;line-height:1.7}
+
+        /* ── INPUT AREA ── */
+        .input-area{background:#0a1520;border-top:1px solid #1e3245;padding:14px 20px;flex-shrink:0}
+        .input-row{display:flex;gap:10px;align-items:flex-end}
+        .input-box{flex:1;background:#1b2d3d;border:1px solid #2a4155;color:#e2e8f0;padding:11px 16px;border-radius:8px;font-size:13px;font-family:inherit;resize:none;outline:none;transition:border-color .15s;max-height:120px;line-height:1.5}
+        .input-box:focus{border-color:#4a7aaa}
+        .input-box::placeholder{color:#4a6a82}
+        .send-btn{background:linear-gradient(135deg,#1a5a9a,#1a8a5a);border:none;color:#fff;width:44px;height:44px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:opacity .15s;flex-shrink:0}
+        .send-btn:hover{opacity:.85}
+        .send-btn:disabled{opacity:.3;cursor:not-allowed}
+        .clear-btn{background:#1b2d3d;border:1px solid #2a4155;color:#7fa3be;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:background .15s;flex-shrink:0}
+        .clear-btn:hover{background:#2a4155}
+        .input-hint{font-size:10.5px;color:#4a6a82;margin-top:6px;text-align:right}
+
+        /* Formatage des réponses IA */
+        .bubble.ia strong{color:#4ade80}
+        .bubble.ia em{color:#fbbf24}
+        .bubble.ia code{background:#0f1a24;color:#6effa8;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-logo">🤖</div>
+    <div class="header-info">
+        <h1>Copilote IA — Trésorerie</h1>
+        <p>Powered by Claude AI · Orienet/Bestmobile</p>
+    </div>
+    <div class="header-status">
+        <div class="status-dot"></div>
+        <span class="status-txt">En ligne</span>
+    </div>
+    <a href="/flux-tresorerie" class="back-btn">← Tableau de bord</a>
+</div>
+
+<!-- SUGGESTIONS RAPIDES -->
+<div class="suggestions-bar">
+    <span class="suggestions-label">💡 Questions rapides :</span>
+    <span class="chip" onclick="suggerer('Quelle est la situation de ma trésorerie aujourd\'hui ?')">📊 Situation du jour</span>
+    <span class="chip" onclick="suggerer('Quel est le total des encaissements ce mois ?')">💰 Encaissements du mois</span>
+    <span class="chip" onclick="suggerer('Pourquoi mon cash a-t-il baissé cette semaine ?')">📉 Analyse de la semaine</span>
+    <span class="chip" onclick="suggerer('Quelles opérations sont suspectes ou anormales ?')">🚨 Anomalies</span>
+    <span class="chip" onclick="suggerer('Combien d\'opérations sont en attente de validation ?')">⏳ En attente</span>
+    <span class="chip" onclick="suggerer('Donne-moi un résumé complet de la trésorerie')">📋 Résumé complet</span>
+    <span class="chip" onclick="suggerer('ما هو وضع خزينتي اليوم ؟')">🇲🇦 بالعربية</span>
+</div>
+
+<!-- ZONE DE CHAT -->
+<div class="chat-wrap" id="chat-wrap">
+    <div class="welcome" id="welcome">
+        <span class="icon">🤖</span>
+        <h2>Bonjour ! Je suis votre Copilote IA</h2>
+        <p>Je connais toutes vos données de trésorerie en temps réel.<br/>
+            Posez-moi n'importe quelle question en <strong style="color:#7fb8e8">français</strong>,
+            <strong style="color:#e8a030">arabe</strong> ou <strong style="color:#4ade80">anglais</strong>.</p>
+    </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-area">
+    <div class="input-row">
+    <textarea class="input-box" id="question-input"
+              placeholder="Posez votre question sur la trésorerie..."
+              rows="1"
+              onkeydown="handleKey(event)"
+              oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="envoyerMessage()" title="Envoyer">➤</button>
+        <button class="clear-btn" onclick="viderChat()" title="Nouvelle conversation">🗑️</button>
+    </div>
+    <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour nouvelle ligne</div>
+</div>
+
+<script>
+    /*<![CDATA[*/
+
+    // ── État de la conversation ───────────────────────────────────
+    let historique = []; // [{role:"user",content:"..."},{role:"assistant",content:"..."}]
+    let enChargement = false;
+
+    // ── Envoyer un message ────────────────────────────────────────
+    async function envoyerMessage() {
+        const input = document.getElementById('question-input');
+        const question = input.value.trim();
+        if (!question || enChargement) return;
+
+        // Masquer le message de bienvenue
+        const welcome = document.getElementById('welcome');
+        if (welcome) welcome.style.display = 'none';
+
+        // Afficher le message utilisateur
+        ajouterMessage('user', question);
+        input.value = '';
+        input.style.height = 'auto';
+
+        // Afficher l'indicateur de chargement
+        const typingId = afficherTyping();
+        enChargement = true;
+        document.getElementById('send-btn').disabled = true;
+
+        try {
+            const response = await fetch('/copilote/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, historique })
+            });
+
+            const data = await response.json();
+            supprimerTyping(typingId);
+
+            if (data.erreur) {
+                ajouterMessage('ia', '❌ ' + data.erreur);
+            } else {
+                const reponse = data.reponse;
+                ajouterMessage('ia', reponse);
+
+                // Ajouter à l'historique pour garder le contexte
+                historique.push({ role: 'user',      content: question });
+                historique.push({ role: 'assistant', content: reponse  });
+
+                // Garder seulement les 10 derniers échanges pour ne pas dépasser les limites
+                if (historique.length > 20) historique = historique.slice(-20);
+            }
+
+        } catch (err) {
+            supprimerTyping(typingId);
+            ajouterMessage('ia', '❌ Erreur de connexion. Vérifiez que le serveur est en ligne.');
+        }
+
+        enChargement = false;
+        document.getElementById('send-btn').disabled = false;
+        input.focus();
+    }
+
+    // ── Ajouter un message dans le chat ──────────────────────────
+    function ajouterMessage(role, texte) {
+        const wrap = document.getElementById('chat-wrap');
+        const now  = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+
+        const msg = document.createElement('div');
+        msg.className = 'msg ' + role;
+        msg.innerHTML = `
+        <div class="avatar ${role}">${role === 'ia' ? '🤖' : '👤'}</div>
+        <div>
+            <div class="bubble ${role}">${formaterTexte(texte)}</div>
+            <div class="bubble" style="background:transparent;border:none;padding:2px 4px">
+                <span style="font-size:10.5px;color:#4a6a82">${role === 'ia' ? 'Copilote IA' : 'Vous'} · ${now}</span>
+            </div>
+        </div>`;
+        wrap.appendChild(msg);
+        wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    // ── Formater le texte de l'IA (markdown simplifié) ────────────
+    function formaterTexte(texte) {
+        return texte
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`(.+?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br/>');
+    }
+
+    // ── Indicateur "en train d'écrire" ───────────────────────────
+    function afficherTyping() {
+        const wrap = document.getElementById('chat-wrap');
+        const id = 'typing-' + Date.now();
+        const div = document.createElement('div');
+        div.className = 'msg ia';
+        div.id = id;
+        div.innerHTML = `
+        <div class="avatar ia">🤖</div>
+        <div class="bubble ia typing-bubble">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>`;
+        wrap.appendChild(div);
+        wrap.scrollTop = wrap.scrollHeight;
+        return id;
+    }
+
+    function supprimerTyping(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    // ── Suggestions rapides ───────────────────────────────────────
+    function suggerer(question) {
+        const input = document.getElementById('question-input');
+        input.value = question;
+        input.focus();
+        autoResize(input);
+    }
+
+    // ── Touche Entrée pour envoyer ────────────────────────────────
+    function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            envoyerMessage();
+        }
+    }
+
+    // ── Auto-resize du textarea ───────────────────────────────────
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    // ── Vider le chat ─────────────────────────────────────────────
+    function viderChat() {
+        historique = [];
+        const wrap = document.getElementById('chat-wrap');
+        wrap.innerHTML = `
+        <div class="welcome" id="welcome">
+            <span class="icon">🤖</span>
+            <h2>Nouvelle conversation</h2>
+            <p>L'historique a été effacé. Je suis prêt pour vos questions.</p>
+        </div>`;
+    }
+
+    // Focus automatique sur l'input
+    document.getElementById('question-input').focus();
+    /*]]>*/
+</script>
+</body>
+</html>

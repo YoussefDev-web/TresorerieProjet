@@ -12,30 +12,41 @@
         ::-webkit-scrollbar-track{background:#14202b}
         ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
 
+        /* ── HEADER ── */
         .header-strip{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #1e3245;gap:10px}
         .dot{width:7px;height:7px;border-radius:50%;background:#3ec97a;box-shadow:0 0 6px #3ec97a}
         .header-strip h1{font-size:16px;font-weight:700;letter-spacing:.1em}
 
+        /* ── ALERTS ── */
         .alert{margin:10px 18px 0;padding:9px 14px;border-radius:4px;font-size:12.5px}
         .alert-success{background:#14532d22;border:1px solid #14532d;color:#4ade80}
         .alert-error{background:#7f1d1d22;border:1px solid #7f1d1d;color:#f87171}
 
         /* ── TOP BLOCK ── */
         .top-block{display:flex;margin:14px 18px 0;border:1px solid #2a4155;border-radius:5px}
-        .toolbar{background:#1b2d3d;border-right:1px solid #2a4155;padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;min-width:200px;flex-shrink:0}
-        .tbtn{background:#223347;border:1px solid #2a4155;color:#c8daea;padding:6px 11px;border-radius:4px;font-size:12px;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;transition:background .15s;width:100%}
+
+        /* ── TOOLBAR ── */
+        .toolbar{background:#1b2d3d;border-right:1px solid #2a4155;padding:12px 10px;display:flex;flex-direction:column;gap:7px;width:230px;flex-shrink:0}
+        /* Rangée bouton principal + bouton icône */
+        .btn-row{display:flex;gap:6px;align-items:stretch}
+        .tbtn{background:#223347;border:1px solid #2a4155;color:#c8daea;padding:7px 11px;border-radius:4px;font-size:12px;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;transition:background .15s;flex:1;justify-content:flex-start}
         .tbtn:hover{background:#2a4155}
-        .tbtn-filter{background:#1a3a6a;border-color:#2a5a9a;color:#7fb8e8}
+        /* Bouton icône carré à droite */
+        .tbtn-icon{background:#223347;border:1px solid #2a4155;color:#c8daea;width:34px;flex-shrink:0;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;font-family:inherit;padding:0}
+        .tbtn-icon:hover{background:#2a4155}
+        .tbtn-icon.print{color:#7fb8e8;border-color:#2a5a8a;background:#1a3a5a}
+        .tbtn-icon.print:hover{background:#2a4a7a}
+        .tbtn-icon.dl{color:#4ade80;border-color:#2a6a48;background:#1a3a28}
+        .tbtn-icon.dl:hover{background:#1f4a30}
+        /* Boutons spéciaux */
+        .tbtn-archive{background:#2a1f0f;border-color:#5a3a10;color:#e8a030}
+        .tbtn-archive:hover{background:#3a2a10}
+        .tbtn-filter{background:#1a3a6a;border-color:#2a5a9a;color:#7fb8e8;justify-content:center}
         .tbtn-filter:hover{background:#2a4a7a}
         .tbtn-filter.actif{background:#0f5a2a;border-color:#2a8a4a;color:#4ade80}
-        .tbtn-sm{width:auto;padding:6px 9px;font-size:13px}
-        .tbtn-print{background:#1a3a5a;border-color:#2a5a8a;color:#7fb8e8}
-        .tbtn-print:hover{background:#2a4a7a}
-        .tbtn-dl{background:#1a3a28;border-color:#2a6a48;color:#4ade80}
-        .tbtn-dl:hover{background:#1f4a30}
-        .trow-inline{display:flex;gap:6px;align-items:center}
-        .sep{height:1px;background:#1e3245;margin:2px 0}
-        .badge-filtre{background:#0f5a2a;color:#4ade80;border:1px solid #2a8a4a;padding:2px 8px;border-radius:20px;font-size:10px;font-family:'IBM Plex Mono',monospace}
+        .tbtn-reset{color:#f87171;border-color:#7f1d1d55;font-size:11px;justify-content:center}
+        .sep{height:1px;background:#1e3245}
+        .badge-filtre{background:#0f5a2a;color:#4ade80;border:1px solid #2a8a4a;padding:1px 7px;border-radius:20px;font-size:10px}
 
         /* ── CAISSE TABLE ── */
         .caisse-wrap{flex:1;min-width:0}
@@ -64,6 +75,7 @@
         .ops-tbl thead tr{background:#1b2d3d}
         .ops-tbl thead th{padding:8px 6px;text-align:left;color:#7fa3be;font-weight:600;font-size:11px;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap;overflow:hidden}
         .ops-tbl thead th:last-child{border-right:none}
+        .ops-tbl thead th.dyn{color:#e8a030}
         .ops-tbl tbody tr{border-bottom:1px solid #1e3245}
         .ops-tbl tbody tr:nth-child(even){background:#1b2d3d}
         .ops-tbl tbody tr:nth-child(odd){background:#14202b}
@@ -86,50 +98,42 @@
         .empty-td a{color:#4fa8e8;text-decoration:none}
 
         /* ══════════════════════════════════════════
-           MODAL FILTRER
+           MODAL FILTRER — identique à la capture
         ══════════════════════════════════════════ */
-        .modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:1000;align-items:center;justify-content:center}
+        .modal-overlay{display:none;position:fixed;inset:0;background:#00000099;z-index:1000;align-items:center;justify-content:center}
         .modal-overlay.open{display:flex}
-        .modal{background:#3a6db5;border-radius:8px;width:860px;max-width:95vw;padding:0;overflow:hidden;box-shadow:0 20px 60px #00000099}
-        .modal-header{background:#2d5a9a;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #4a7aaa}
+        .modal{background:#3a6db5;border-radius:6px;width:880px;max-width:96vw;overflow:hidden;box-shadow:0 24px 64px #000000bb}
+        .modal-header{background:#2d5a9a;display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid #4a7aaa}
         .modal-header h3{font-size:14px;font-weight:700;letter-spacing:.08em;color:#fff}
-        .modal-close{background:transparent;border:none;color:#c8daea;font-size:18px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:background .15s}
+        .modal-close{background:transparent;border:1px solid #4a7aaa;color:#c8daea;font-size:14px;cursor:pointer;padding:3px 9px;border-radius:4px;transition:background .15s}
         .modal-close:hover{background:#1e3a6a}
-        .modal-body{padding:18px}
-
-        /* Sections */
-        .modal-section{margin-bottom:16px}
-        .section-label{display:inline-block;padding:3px 12px;border-radius:4px;font-size:12px;font-weight:700;margin-bottom:10px;letter-spacing:.04em}
+        .modal-body{padding:20px 20px 10px}
+        .modal-section{margin-bottom:18px}
+        .section-label{display:inline-block;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:700;margin-bottom:12px;letter-spacing:.03em}
         .label-red{background:#c0392b;color:#fff}
         .label-green{background:#27ae60;color:#fff}
         .label-orange{background:#e67e22;color:#fff}
-
-        .filter-grid{display:grid;gap:10px}
-        .grid-1{grid-template-columns:280px}
-        .grid-2{grid-template-columns:1fr 1fr}
-        .grid-4{grid-template-columns:repeat(4,1fr)}
-
-        .filter-field{display:flex;flex-direction:column;gap:4px}
-        .filter-field label{font-size:11.5px;font-weight:600;color:#d0e8ff}
-        .filter-select,.filter-input{background:#2d5a9a;border:1px solid #4a7aaa;color:#fff;padding:7px 10px;border-radius:4px;font-size:12.5px;font-family:inherit;width:100%;cursor:pointer;appearance:none;-webkit-appearance:none}
-        .filter-select:focus,.filter-input:focus{outline:2px solid #7fb8e8;border-color:#7fb8e8}
-        .filter-select option{background:#2d5a9a;color:#fff}
-        .filter-input[type="date"]{cursor:pointer}
-        .filter-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
-
-        /* select custom arrow */
+        /* Grilles */
+        .grid-1{display:grid;grid-template-columns:280px;gap:10px}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .filter-field{display:flex;flex-direction:column;gap:5px}
+        .filter-field label{font-size:12px;font-weight:500;color:#d0e8ff}
         .select-wrap{position:relative}
         .select-wrap::after{content:'▼';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:#7fb8e8;pointer-events:none}
-
-        .date-row-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-        .modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 18px;background:#2d5a9a;border-top:1px solid #4a7aaa}
-        .btn-fermer{background:#223347;border:1px solid #2a4155;color:#c8daea;padding:8px 20px;border-radius:4px;font-size:13px;cursor:pointer;font-family:inherit}
-        .btn-fermer:hover{background:#2a4155}
-        .btn-filtrer{background:#27ae60;border:none;color:#fff;padding:8px 24px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
-        .btn-filtrer:hover{background:#2ecc71}
-        .btn-reset{background:#c0392b;border:none;color:#fff;padding:8px 16px;border-radius:4px;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center}
+        .filter-select,.filter-input{background:#2d5a9a;border:1px solid #4a7aaa;color:#fff;padding:8px 30px 8px 10px;border-radius:4px;font-size:12.5px;font-family:inherit;width:100%;cursor:pointer;appearance:none;-webkit-appearance:none}
+        .filter-input{padding:8px 10px}
+        .filter-select:focus,.filter-input:focus{outline:2px solid #7fb8e8}
+        .filter-select option{background:#2d5a9a;color:#fff}
+        .filter-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;opacity:.7}
+        /* Footer modal */
+        .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;background:#2d5a9a;border-top:1px solid #4a7aaa}
+        .btn-reset{background:#c0392b;border:none;color:#fff;padding:8px 16px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
         .btn-reset:hover{background:#e74c3c}
+        .btn-fermer{background:#3a3a3a;border:none;color:#fff;padding:8px 18px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+        .btn-fermer:hover{background:#4a4a4a}
+        .btn-filtrer{background:#27ae60;border:none;color:#fff;padding:8px 22px;border-radius:4px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+        .btn-filtrer:hover{background:#2ecc71}
     </style>
 </head>
 <body>
@@ -143,33 +147,43 @@
 <div th:if="${erreur}" class="alert alert-error"   th:text="${erreur}"></div>
 
 <div class="top-block">
+
+    <!-- ══ TOOLBAR ══ -->
     <div class="toolbar">
-        <!-- Nouvelle Opération + Imprimer -->
-        <div class="trow-inline" style="display:flex; gap:6px;">
-            <a href="/operations/nouvelle" class="tbtn" style="flex:1; text-align:center;">📋 Nouvelle Opération</a>
-            <button class="tbtn" style="flex:1; text-align:center;" onclick="imprimerTableau()" title="Imprimer">🖨️ Imprimer</button>
+
+        <!-- Nouvelle Opération | 🖨️ -->
+        <div class="btn-row">
+            <a href="/operations/nouvelle" class="tbtn">📋 Nouvelle Opération</a>
+            <button class="tbtn-icon print" onclick="imprimerTableau()" title="Imprimer">🖨️</button>
         </div>
-        <!-- Gérer les Champs + Télécharger -->
-        <div class="trow-inline" style="display:flex; gap:6px;">
-            <a href="/champs" class="tbtn" style="flex:1; text-align:center;">➕ Gérer les Champs</a>
-            <button class="tbtn" style="flex:1; text-align:center;" onclick="telechargerCSV()" title="Télécharger CSV">⬇️ Télécharger</button>
+
+        <!-- Gérer les Champs | ⬇️ -->
+        <div class="btn-row">
+            <a href="/champs" class="tbtn">➕ Gérer les Champs</a>
+            <button class="tbtn-icon dl" onclick="telechargerCSV()" title="Télécharger CSV">⬇️</button>
         </div>
-        <a href="/archives" class="tbtn" style="display:block; text-align:center; width:100%;">📦 Archives</a>
+
+        <!-- Archives -->
+        <div class="btn-row">
+            <a href="/archives" class="tbtn tbtn-archive">📦 Archives</a>
+        </div>
+
+        <!-- Copilote IA -->
+        <div class="btn-row">
+            <a href="/copilote" class="tbtn" style="background:#1a2a4a;border-color:#2a4a8a;color:#7fb8e8">🤖 Copilote IA</a>
+        </div>
+
         <div class="sep"></div>
-        <!-- Bouton Filtrer -->
-        <button class="tbtn" style="display:block; text-align:center; width:100%;"
-                th:classappend="${filtreActif} ? ' actif'" onclick="openModal()">
+
+        <!-- Filtrer -->
+        <button class="tbtn tbtn-filter" th:classappend="${filtreActif} ? ' actif'" onclick="openModal()">
             🔽 Filtrer
             <span th:if="${filtreActif}" class="badge-filtre">actif</span>
         </button>
-        <!-- Bouton reset si filtre actif -->
-        <a th:if="${filtreActif}" href="/flux-tresorerie" class="tbtn"
-           style="display:block; text-align:center; width:100%; color:#f87171; border-color:#7f1d1d55;">
-            ✕ Réinitialiser le filtre
-        </a>
+        <a th:if="${filtreActif}" href="/flux-tresorerie" class="tbtn tbtn-reset">✕ Réinitialiser</a>
     </div>
 
-    <!-- Tableau caisses -->
+    <!-- ══ TABLEAU CAISSES ══ -->
     <div class="caisse-wrap">
         <table class="caisse-tbl">
             <thead>
@@ -203,7 +217,7 @@
     </div>
 </div>
 
-<!-- Tableau des opérations -->
+<!-- ══ TABLEAU OPÉRATIONS ══ -->
 <div class="ops-section">
     <table class="ops-tbl">
         <thead>
@@ -220,13 +234,12 @@
             <th style="width:85px">Désignation</th>
             <th style="width:85px">Description</th>
             <th style="width:72px">Etat</th>
-            <th th:each="ch : ${champsDynamiques}" style="width:88px" th:text="${ch.nomChamp}">—</th>
+            <th th:each="ch : ${champsDynamiques}" class="dyn" style="width:88px" th:text="${ch.nomChamp}">—</th>
             <th style="width:68px">Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="op : ${operations}"
-            th:classappend="${op.etat == 'Annulé'} ? 'row-annule' : ''">
+        <tr th:each="op : ${operations}" th:classappend="${op.etat == 'Annulé'} ? 'row-annule' : ''">
             <td class="c-id"  th:text="${op.id}">—</td>
             <td th:text="${op.dateFlux != null} ? ${#temporals.format(op.dateFlux,'dd/MM/yyyy')} : ''">—</td>
             <td th:text="${op.natureFlux}">—</td>
@@ -255,7 +268,7 @@
         </tr>
         <tr th:if="${#lists.isEmpty(operations)}">
             <td th:colspan="${13 + #lists.size(champsDynamiques)}" class="empty-td">
-                <span th:if="${filtreActif}">Aucun résultat pour ce filtre — <a href="/flux-tresorerie">Réinitialiser →</a></span>
+                <span th:if="${filtreActif}">Aucun résultat — <a href="/flux-tresorerie">Réinitialiser →</a></span>
                 <span th:unless="${filtreActif}">Aucune opération — <a href="/operations/nouvelle">Ajouter la première →</a></span>
             </td>
         </tr>
@@ -263,9 +276,7 @@
     </table>
 </div>
 
-<!-- ══════════════════════════════════════════
-     MODAL FILTRER
-══════════════════════════════════════════ -->
+<!-- ══ MODAL FILTRER ══ -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeOnOverlay(event)">
     <div class="modal">
         <div class="modal-header">
@@ -276,29 +287,12 @@
         <form th:action="@{/flux-tresorerie}" method="get" id="filter-form">
             <div class="modal-body">
 
-                <!-- ── Section 2 : Filtre par date ── -->
+                <!-- Section 1 : Mouvement de flux -->
                 <div class="modal-section">
-                    <span class="section-label label-green">1: Filtrer par date:</span>
-                    <div class="date-row-grid">
+                    <span class="section-label label-red">1: Filtrer par:</span>
+                    <div class="grid-1">
                         <div class="filter-field">
-                            <label>Du :</label>
-                            <input type="date" name="dateDebut" id="s-dateDebut" class="filter-input"
-                                   th:value="${f_dateDebut != null} ? ${#temporals.format(f_dateDebut,'yyyy-MM-dd')} : ''"/>
-                        </div>
-                        <div class="filter-field">
-                            <label>Au :</label>
-                            <input type="date" name="dateFin" id="s-dateFin" class="filter-input"
-                                   th:value="${f_dateFin != null} ? ${#temporals.format(f_dateFin,'yyyy-MM-dd')} : ''"/>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ── Section 3 : Filtres combinés ── -->
-                <div class="modal-section">
-                    <span class="section-label label-orange">2: Filtrer par l'un des huit filtres:</span>
-                    <div class="filter-grid grid-4" style="margin-bottom:10px">
-                        <div class="filter-field">
-                            <label>Nature de flux :</label>
+                            <label>Mouvement de flux :</label>
                             <div class="select-wrap">
                                 <select name="natureFlux" class="filter-select">
                                     <option value="">-- Tous --</option>
@@ -307,6 +301,32 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Section 2 : Date -->
+                <div class="modal-section">
+                    <span class="section-label label-green">2: Filtrer par date:</span>
+                    <div class="grid-2">
+                        <div class="filter-field">
+                            <label>Du :</label>
+                            <input type="date" name="dateDebut" class="filter-input"
+                                   th:value="${f_dateDebut != null} ? ${#temporals.format(f_dateDebut,'yyyy-MM-dd')} : ''"/>
+                        </div>
+                        <div class="filter-field">
+                            <label>Au :</label>
+                            <input type="date" name="dateFin" class="filter-input"
+                                   th:value="${f_dateFin != null} ? ${#temporals.format(f_dateFin,'yyyy-MM-dd')} : ''"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3 : Quatre filtres -->
+                <div class="modal-section">
+                    <span class="section-label label-orange">3: Filtrer par l'un des quatre filtres:</span>
+
+                    <!-- Ligne 1 : Caisse | Mode de flux | Titulaire de flux | Etat -->
+                    <div class="grid-4" style="margin-bottom:10px">
                         <div class="filter-field">
                             <label>Caisse :</label>
                             <div class="select-wrap">
@@ -337,8 +357,20 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="filter-field">
+                            <label>Etat :</label>
+                            <div class="select-wrap">
+                                <select name="etat" class="filter-select">
+                                    <option value="">-- Tous --</option>
+                                    <option th:each="e : ${listEtat}" th:value="${e}" th:text="${e}"
+                                            th:selected="${e == f_etat}">—</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="filter-grid grid-4">
+
+                    <!-- Ligne 2 : CC/P | Famille | Désignation | (vide) -->
+                    <div class="grid-4">
                         <div class="filter-field">
                             <label>CC/P :</label>
                             <div class="select-wrap">
@@ -369,16 +401,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="filter-field">
-                            <label>Etat :</label>
-                            <div class="select-wrap">
-                                <select name="etat" class="filter-select">
-                                    <option value="">-- Tous --</option>
-                                    <option th:each="e : ${listEtat}" th:value="${e}" th:text="${e}"
-                                            th:selected="${e == f_etat}">—</option>
-                                </select>
-                            </div>
-                        </div>
+                        <div></div><!-- cellule vide -->
                     </div>
                 </div>
 
@@ -387,7 +410,7 @@
             <div class="modal-footer">
                 <a href="/flux-tresorerie" class="btn-reset">✕ Réinitialiser</a>
                 <button type="button" class="btn-fermer" onclick="closeModal()">Fermer</button>
-                <button type="submit" class="btn-filtrer">Filtrer</button>
+                <button type="submit"  class="btn-filtrer">Filtrer</button>
             </div>
         </form>
     </div>
@@ -396,105 +419,63 @@
 <script>
     /*<![CDATA[*/
     const overlay = document.getElementById('modal-overlay');
-
     function openModal()  { overlay.classList.add('open'); }
     function closeModal() { overlay.classList.remove('open'); }
     function closeOnOverlay(e) { if (e.target === overlay) closeModal(); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // Désactiver les champs vides avant soumission du filtre
+    // Désactiver les champs vides avant soumission → non envoyés → controller reçoit null
     document.getElementById('filter-form').addEventListener('submit', function() {
-        this.querySelectorAll('select, input').forEach(function(el) {
-            if (el.value === '' || el.value === null) el.disabled = true;
+        this.querySelectorAll('select, input[type="date"]').forEach(el => {
+            if (!el.value) el.disabled = true;
         });
     });
 
-    // ── Imprimer le tableau des opérations ───────────────────────
+    // ── Imprimer ─────────────────────────────────────────────────
     function imprimerTableau() {
-        const style = `
-        <style>
-            body { font-family: Arial, sans-serif; font-size: 11px; color: #000; }
-            h2 { font-size: 14px; margin-bottom: 10px; }
-            table { width: 100%; border-collapse: collapse; }
-            th { background: #2d5a9a; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; border: 1px solid #ccc; }
-            td { padding: 5px 8px; border: 1px solid #ddd; font-size: 10px; }
-            tr:nth-child(even) { background: #f5f5f5; }
-            .annule td { text-decoration: line-through; color: #999; }
-            @media print { body { margin: 0; } }
-        </style>`;
-
+        const style = `<style>
+        body{font-family:Arial,sans-serif;font-size:10px}
+        h2{font-size:13px;margin-bottom:8px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#2d5a9a;color:#fff;padding:5px 6px;text-align:left;border:1px solid #ccc;font-size:9.5px}
+        td{padding:4px 6px;border:1px solid #ddd;font-size:9.5px}
+        tr:nth-child(even){background:#f5f5f5}
+        .annule td{text-decoration:line-through;color:#aaa}
+    </style>`;
         const tbl = document.querySelector('.ops-tbl');
         if (!tbl) return;
-
-        // Cloner le tableau pour ne pas modifier l'original
-        const clone = tbl.cloneNode(true);
-        
-        // Nettoyer pour l'impression (supprimer Actions, nettoyer texte)
-        clone.querySelectorAll('tr').forEach((tr) => {
-            if (tr.querySelector('.empty-td')) return; // skip empty state row
-            if (tr.children.length > 0) tr.removeChild(tr.lastElementChild); // Remove 'Actions'
-            if (tr.classList.contains('row-annule')) tr.classList.add('annule');
-            tr.querySelectorAll('.ev').forEach(e => e.textContent = 'Validé');
-            tr.querySelectorAll('.ea').forEach(e => e.textContent = 'En attente');
-            tr.querySelectorAll('.en').forEach(e => e.textContent = 'Annulé');
-        });
-
-        const win = window.open('', '_blank', 'width=1100,height=700');
-        win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Tableau des Opérations</title>${style}</head><body>`);
+        const win = window.open('','_blank','width=1200,height=700');
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Opérations</title>${style}</head><body>`);
         win.document.write(`<h2>📋 Tableau des Opérations — Flux de Trésorerie</h2>`);
-        win.document.write(clone.outerHTML);
+        win.document.write(tbl.outerHTML);
         win.document.write(`</body></html>`);
         win.document.close();
-        win.focus();
-        setTimeout(() => win.print(), 400);
+        setTimeout(() => { win.focus(); win.print(); }, 400);
     }
 
-    // ── Télécharger le tableau en CSV ────────────────────────────
+    // ── Télécharger CSV ───────────────────────────────────────────
     function telechargerCSV() {
         const tbl = document.querySelector('.ops-tbl');
         if (!tbl) return;
-
         const rows = [];
-
-        // En-têtes
-        const headers = [];
-        const ths = tbl.querySelectorAll('thead th');
-        ths.forEach((th, index) => {
-            if (index < ths.length - 1) { // Ignorer Actions
-                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
-            }
+        tbl.querySelectorAll('thead th').forEach((th, i, arr) => {
+            if (i === 0) rows.push([]);
+            rows[0].push('"' + th.textContent.trim().replace(/"/g,'""') + '"');
         });
-        rows.push(headers.join(';'));
-
-        // Lignes de données
         tbl.querySelectorAll('tbody tr').forEach(tr => {
-            if (tr.querySelector('.empty-td')) return; // ignorer ligne vide
+            if (tr.querySelector('.empty-td')) return;
             const cells = [];
-            const tds = tr.querySelectorAll('td');
-            tds.forEach((td, index) => {
-                if (index < tds.length - 1) { // Ignorer Actions
-                    // On nettoie les emojis pour rendre le texte clair
-                    let txt = td.textContent.trim()
-                        .replace('✓ Validé', 'Validé')
-                        .replace('⏳ Attente', 'En attente')
-                        .replace('✕ Annulé', 'Annulé')
-                        .replace(/"/g, '""');
-                    cells.push('"' + txt + '"');
-                }
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push('"' + td.textContent.trim().replace(/"/g,'""') + '"');
             });
-            if (cells.length > 0) rows.push(cells.join(';'));
+            if (cells.length) rows.push(cells);
         });
-
-        const csv = '\uFEFF' + rows.join('\n'); // BOM UTF-8 pour Excel
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
-        a.download = 'operations_' + new Date().toISOString().slice(0,10) + '.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const csv = '\uFEFF' + rows.map(r => r.join(';')).join('\n');
+        const a = Object.assign(document.createElement('a'), {
+            href: URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})),
+            download: 'operations_' + new Date().toISOString().slice(0,10) + '.csv'
+        });
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
     /*]]>*/
 </script>

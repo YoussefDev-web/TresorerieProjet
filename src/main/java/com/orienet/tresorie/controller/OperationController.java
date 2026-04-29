@@ -1,9 +1,12 @@
 package com.orienet.tresorie.controller;
 
 import com.orienet.tresorie.model.Operation;
+import com.orienet.tresorie.service.ActiviteService;
 import com.orienet.tresorie.service.CaisseService;
 import com.orienet.tresorie.service.OperationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,7 @@ public class OperationController {
 
     private final OperationService operationService;
     private final CaisseService    caisseService;
+    private final ActiviteService  activiteService;
 
     // ─── Nouvelle opération ───────────────────────────────────────
     @GetMapping("/operations/nouvelle")
@@ -33,9 +37,12 @@ public class OperationController {
     @PostMapping("/operations/sauvegarder")
     public String sauvegarder(@ModelAttribute Operation operation,
                               HttpServletRequest request,
+                              @AuthenticationPrincipal UserDetails userDetails,
                               RedirectAttributes ra) {
         try {
-            operationService.sauvegarder(operation, extraireChampsDynamiques(request));
+            String creePar = (userDetails != null) ? userDetails.getUsername() : "inconnu";
+            operationService.sauvegarder(operation, extraireChampsDynamiques(request), creePar);
+            activiteService.logAction(creePar, "AJOUT", "Création de l'opération N° " + operation.getId() + " (" + operation.getNatureFlux() + ") - Caisse: " + operation.getCaisse() + " - Montant: " + operation.getMontant() + " dh");
             ra.addFlashAttribute("succes", "✅ Opération ajoutée !");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -60,9 +67,12 @@ public class OperationController {
     public String modifierSave(@PathVariable Long id,
                                @ModelAttribute Operation operation,
                                HttpServletRequest request,
+                               @AuthenticationPrincipal UserDetails userDetails,
                                RedirectAttributes ra) {
         try {
+            String modifiePar = (userDetails != null) ? userDetails.getUsername() : "inconnu";
             operationService.modifier(id, operation, extraireChampsDynamiques(request));
+            activiteService.logAction(modifiePar, "MODIFICATION", "Modification de l'opération N° " + id + " (" + operation.getNatureFlux() + ")");
             ra.addFlashAttribute("succes", "✅ Opération modifiée !");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -74,9 +84,13 @@ public class OperationController {
     // ─── Archiver (au lieu de supprimer) ─────────────────────────
     // L'opération est masquée du tableau principal et n'impacte plus la caisse
     @GetMapping("/operations/archiver/{id}")
-    public String archiver(@PathVariable Long id, RedirectAttributes ra) {
+    public String archiver(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, RedirectAttributes ra) {
         try {
+            String archivePar = (userDetails != null) ? userDetails.getUsername() : "inconnu";
+            Operation op = operationService.findById(id).orElse(null);
+            String nature = (op != null && op.getNatureFlux() != null) ? op.getNatureFlux() : "Inconnue";
             operationService.archiver(id);
+            activiteService.logAction(archivePar, "ARCHIVAGE", "Archivage de l'opération N° " + id + " (" + nature + ")");
             ra.addFlashAttribute("succes", "📦 Opération archivée.");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -102,9 +116,13 @@ public class OperationController {
 
     // ─── Restaurer depuis les archives ───────────────────────────
     @GetMapping("/archives/restaurer/{id}")
-    public String restaurer(@PathVariable Long id, RedirectAttributes ra) {
+    public String restaurer(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, RedirectAttributes ra) {
         try {
+            String restaurePar = (userDetails != null) ? userDetails.getUsername() : "inconnu";
+            Operation op = operationService.findById(id).orElse(null);
+            String nature = (op != null && op.getNatureFlux() != null) ? op.getNatureFlux() : "Inconnue";
             operationService.restaurer(id);
+            activiteService.logAction(restaurePar, "RESTAURATION", "Restauration de l'opération N° " + id + " (" + nature + ")");
             ra.addFlashAttribute("succes", "✅ Opération restaurée dans le tableau principal.");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());
@@ -114,9 +132,13 @@ public class OperationController {
 
     // ─── Supprimer définitivement (depuis archives seulement) ────
     @GetMapping("/archives/supprimer/{id}")
-    public String supprimerDefinitivement(@PathVariable Long id, RedirectAttributes ra) {
+    public String supprimerDefinitivement(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, RedirectAttributes ra) {
         try {
+            String supprimePar = (userDetails != null) ? userDetails.getUsername() : "inconnu";
+            Operation op = operationService.findById(id).orElse(null);
+            String nature = (op != null && op.getNatureFlux() != null) ? op.getNatureFlux() : "Inconnue";
             operationService.supprimerDefinitivement(id);
+            activiteService.logAction(supprimePar, "SUPPRESSION", "Suppression définitive de l'opération N° " + id + " (" + nature + ")");
             ra.addFlashAttribute("succes", "🗑️ Opération supprimée définitivement.");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("erreur", e.getMessage());

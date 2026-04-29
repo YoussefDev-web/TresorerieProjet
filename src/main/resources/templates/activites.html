@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Journal d'Activités</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#14202b;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:#14202b}
+        ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
+
+        /* ── HEADER ── */
+        .header-strip{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #1e3245;justify-content:space-between}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .dot{width:7px;height:7px;border-radius:50%;background:#e8a030;box-shadow:0 0 6px #e8a030}
+        .header-strip h1{font-size:16px;font-weight:700;letter-spacing:.1em;color:#e8a030}
+        .btn-retour{background:#223347;border:1px solid #2a4155;color:#c8daea;padding:6px 12px;border-radius:4px;font-size:12px;text-decoration:none;transition:background .15s}
+        .btn-retour:hover{background:#2a4155}
+
+        /* ── TABLEAU ACTIVITÉS ── */
+        .ops-section{margin:20px;border:1px solid #2a4155;border-radius:5px;overflow-x:auto;background:#1b2d3d}
+        .ops-tbl{width:100%;border-collapse:collapse;font-size:12px}
+        .ops-tbl thead tr{background:#1b2d3d}
+        .ops-tbl thead th{padding:10px;text-align:left;color:#7fa3be;font-weight:600;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap}
+        .ops-tbl thead th:last-child{border-right:none}
+        .ops-tbl tbody tr{border-bottom:1px solid #1e3245}
+        .ops-tbl tbody tr:nth-child(odd){background:#14202b}
+        .ops-tbl tbody tr:hover{background:#1e3345 !important}
+        .ops-tbl tbody td{padding:10px;border-right:1px solid #1e3245;color:#fff}
+        .ops-tbl tbody td:last-child{border-right:none}
+
+        .date-col{font-family:'IBM Plex Mono',monospace;color:#c8daea;width:150px}
+        .user-col{font-weight:600;color:#4fa8e8;width:120px}
+        
+        .badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+        .b-ajout{background:#14532d22;color:#4ade80;border:1px solid #14532d55}
+        .b-modif{background:#1e3a8a22;color:#60a5fa;border:1px solid #1e3a8a55}
+        .b-suppr{background:#7f1d1d22;color:#f87171;border:1px solid #7f1d1d55}
+        .b-archiv{background:#78350f22;color:#fbbf24;border:1px solid #78350f55}
+
+        .empty-td{text-align:center !important;color:#4a6a82;padding:28px !important;font-size:13px}
+    </style>
+</head>
+<body>
+
+<div class="header-strip">
+    <div class="header-left">
+        <div class="dot"></div>
+        <h1>JOURNAL D'ACTIVITÉS</h1>
+    </div>
+    <a href="/flux-tresorerie" class="btn-retour">← Retour au tableau</a>
+</div>
+
+<div class="ops-section">
+    <table class="ops-tbl">
+        <thead>
+        <tr>
+            <th class="date-col">Date & Heure</th>
+            <th class="user-col">Utilisateur</th>
+            <th style="width:120px">Action</th>
+            <th>Détails de l'opération</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="act : ${activites}">
+            <td class="date-col" th:text="${#temporals.format(act.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
+            <td class="user-col" th:text="${act.utilisateur}"></td>
+            <td>
+                <span class="badge b-ajout" th:if="${act.action == 'AJOUT'}">➕ Ajout</span>
+                <span class="badge b-modif" th:if="${act.action == 'MODIFICATION'}">✏️ Modif</span>
+                <span class="badge b-suppr" th:if="${act.action == 'SUPPRESSION'}">🗑️ Suppr</span>
+                <span class="badge b-archiv" th:if="${act.action == 'ARCHIVAGE'}">📦 Archive</span>
+                <span class="badge b-ajout" th:if="${act.action == 'RESTAURATION'}">♻️ Restauration</span>
+            </td>
+            <td th:text="${act.details}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(activites)}">
+            <td colspan="4" class="empty-td">Aucune activité enregistrée pour le moment.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -70,4 +70,9 @@ public class Operation {
     // Date à laquelle l'opération a été archivée
     @Column(name = "date_archivage")
     private LocalDate dateArchivage;
-}
+
+    // ── Traçabilité ────────────────────────────────────────────────
+    // Identifiant de l'utilisateur qui a créé l'opération
+    @Column(name = "cree_par")
+    private String creePar;
+}

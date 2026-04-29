@@ -104,11 +104,11 @@ public class CopiloteIAService {
         ctx.append(String.format("Encaissements semaine: %.2f dh | Décaissements semaine: %.2f dh\n", encSemaine, decSemaine));
         ctx.append(String.format("Variation cash semaine: %.2f dh\n\n", encSemaine.subtract(decSemaine)));
 
-        // ── 4. Top 5 opérations récentes ─────────────────────────
-        ctx.append("=== 5 DERNIÈRES OPÉRATIONS ===\n");
+        // ── 4. Top 20 opérations récentes ─────────────────────────
+        ctx.append("=== 20 DERNIÈRES OPÉRATIONS ===\n");
         operationRepository.findByArchiveeFalse().stream()
                 .sorted(Comparator.comparing(Operation::getDateFlux, Comparator.nullsLast(Comparator.reverseOrder())))
-                .limit(5)
+                .limit(20)
                 .forEach(op -> ctx.append(String.format(
                         "- [%s] %s | %s | %.2f dh | Caisse: %s | Etat: %s\n",
                         op.getDateFlux() != null ? op.getDateFlux().format(fmt) : "?",

@@ -40,11 +40,12 @@ public class OperationService {
 
     // ─── SAUVEGARDER ─────────────────────────────────────────────
     @Transactional
-    public Operation sauvegarder(Operation operation, Map<String, String> valeursDyn) {
+    public Operation sauvegarder(Operation operation, Map<String, String> valeursDyn, String creePar) {
         validerNatureFlux(operation.getNatureFlux());
         verifierCaisse(operation.getCaisse());
         operation.setArchivee(false);
         operation.setValeursDynamiques(mapToJson(valeursDyn));
+        operation.setCreePar(creePar);
         Operation saved = operationRepository.save(operation);
         recalculer(saved.getCaisse());
         return saved;

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Gestion des Utilisateurs — Admin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#14202b;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:#14202b}
+        ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
+
+        /* ── Header ── */
+        .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1e3245;background:#0f1e2b}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .dot{width:7px;height:7px;border-radius:50%;background:#4fa8e8;box-shadow:0 0 6px #4fa8e8}
+        .header h1{font-size:16px;font-weight:700;letter-spacing:.1em;color:#4fa8e8}
+        .header-right{display:flex;align-items:center;gap:8px}
+        .back-btn{background:#223347;border:1px solid #2a4155;color:#b0cde0;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;transition:background .15s}
+        .back-btn:hover{background:#2a4155}
+        .logout-btn{background:#4a1a1a;border:1px solid #7f1d1d55;color:#f87171;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s}
+        .logout-btn:hover{background:#6a1a1a}
+
+        /* ── Alerts ── */
+        .alert{margin:12px 20px 0;padding:9px 14px;border-radius:4px;font-size:12.5px}
+        .alert-success{background:#14532d22;border:1px solid #14532d;color:#4ade80}
+        .alert-error{background:#7f1d1d22;border:1px solid #7f1d1d;color:#f87171}
+
+        /* ── Page header ── */
+        .page-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0}
+        .page-header h2{font-size:15px;font-weight:700;color:#e2e8f0}
+        .badge{background:#1a3a5a;border:1px solid #2a5a8a;color:#4fa8e8;font-size:11px;padding:3px 10px;border-radius:20px;font-family:'IBM Plex Mono',monospace}
+
+        /* ── Bouton Ajouter ── */
+        .add-btn{display:inline-flex;align-items:center;gap:6px;background:#1a5c38;border:1px solid #2a8a58;color:#6effa8;padding:8px 16px;border-radius:4px;text-decoration:none;font-size:12.5px;font-weight:600;transition:background .15s;margin:14px 20px 0}
+        .add-btn:hover{background:#226a42}
+
+        /* ── Tableau ── */
+        .table-wrap{margin:14px 20px 32px;border:1px solid #2a4155;border-radius:5px;overflow-x:auto}
+        .users-tbl{width:100%;border-collapse:collapse;font-size:12px}
+        .users-tbl thead tr{background:#1b2d3d}
+        .users-tbl thead th{padding:10px 14px;text-align:left;color:#7fa3be;font-weight:600;font-size:11px;border-bottom:2px solid #2a4155;border-right:1px solid #2a4155;white-space:nowrap}
+        .users-tbl thead th:last-child{border-right:none}
+        .users-tbl tbody tr{border-bottom:1px solid #1e3245;transition:background .1s}
+        .users-tbl tbody tr:nth-child(even){background:#1b2d3d}
+        .users-tbl tbody tr:nth-child(odd){background:#14202b}
+        .users-tbl tbody tr:hover{background:#1e3345 !important}
+        .users-tbl tbody td{padding:9px 14px;border-right:1px solid #1e3245;color:#c8daea}
+        .users-tbl tbody td:last-child{border-right:none}
+        .td-id{color:#4fa8e8;font-family:'IBM Plex Mono',monospace;font-weight:600;width:44px}
+        .td-user{color:#e2f0ff;font-weight:500}
+        .td-role{width:130px}
+        .td-statut{width:80px}
+
+        /* ── Badges ── */
+        .badge-admin{background:#1a3a5a;color:#4fa8e8;border:1px solid #2a5a8a55;padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:600}
+        .badge-user{background:#14532d22;color:#4ade80;border:1px solid #14532d55;padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:600}
+        .badge-actif{background:#14532d22;color:#4ade80;border:1px solid #14532d55;padding:2px 8px;border-radius:20px;font-size:10px}
+        .badge-inactif{background:#7f1d1d22;color:#f87171;border:1px solid #7f1d1d55;padding:2px 8px;border-radius:20px;font-size:10px}
+
+        /* ── Actions ── */
+        .del-form{display:inline}
+        .del-btn{background:transparent;border:1px solid #7f1d1d55;color:#f87171;padding:4px 10px;border-radius:3px;font-size:11px;cursor:pointer;font-family:inherit;transition:background .1s}
+        .del-btn:hover{background:#7f1d1d22}
+
+        /* ── Empty state ── */
+        .empty-state{text-align:center;padding:40px;color:#4a6a82;font-size:12.5px}
+        .empty-state span{font-size:32px;display:block;margin-bottom:10px}
+
+        /* ── Info box ── */
+        .info-box{margin:0 20px 0;background:#1a3a5a22;border:1px solid #2a5a8a44;border-left:3px solid #4fa8e8;border-radius:4px;padding:10px 14px;font-size:11.5px;color:#7fa3be;line-height:1.7}
+        .info-box strong{color:#4fa8e8}
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div class="dot"></div>
+        <h1>👥 GESTION DES UTILISATEURS</h1>
+    </div>
+    <div class="header-right">
+        <a href="/flux-tresorerie" class="back-btn">← Tableau de bord</a>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-btn">⏻ Déconnexion</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
+<div th:if="${erreur}" class="alert alert-error"   th:text="${erreur}"></div>
+
+<!-- Page header -->
+<div class="page-header">
+    <h2>Comptes utilisateurs</h2>
+    <span class="badge" th:text="${#lists.size(utilisateurs)} + ' compte(s)'">0 compte(s)</span>
+</div>
+
+<!-- Bouton ajouter -->
+<a href="/admin/utilisateurs/nouveau" class="add-btn">➕ Ajouter un utilisateur</a>
+
+<!-- Info -->
+<div class="info-box" style="margin-top:12px">
+    <strong>ℹ️ Information :</strong>
+    Le rôle <strong>Admin</strong> permet de consulter les données (lecture seule) et gérer les utilisateurs.
+    Le rôle <strong>Utilisateur</strong> permet d'ajouter, modifier et archiver des opérations.
+</div>
+
+<!-- Tableau -->
+<div class="table-wrap">
+    <table class="users-tbl">
+        <thead>
+        <tr>
+            <th class="td-id">#</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Identifiant</th>
+            <th class="td-role">Rôle</th>
+            <th class="td-statut">Statut</th>
+            <th style="width:80px">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${utilisateurs}">
+            <td class="td-id" th:text="${u.id}">—</td>
+            <td class="td-user" th:text="${u.nom}">—</td>
+            <td th:text="${u.prenom}">—</td>
+            <td><span style="font-family:'IBM Plex Mono',monospace;color:#7fb8e8" th:text="${u.username}">—</span></td>
+            <td>
+                <span th:if="${u.role == 'ROLE_ADMIN'}"     class="badge-admin">🛡️ Admin</span>
+                <span th:if="${u.role == 'ROLE_UTILISATEUR'}" class="badge-user">👤 Utilisateur</span>
+            </td>
+            <td>
+                <span th:if="${u.actif}"  class="badge-actif">✓ Actif</span>
+                <span th:unless="${u.actif}" class="badge-inactif">✕ Inactif</span>
+            </td>
+            <td>
+                <form class="del-form"
+                      th:action="@{/admin/utilisateurs/supprimer/{id}(id=${u.id})}"
+                      method="post"
+                      onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="del-btn">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(utilisateurs)}">
+            <td colspan="7" style="padding:0;border:none">
+                <div class="empty-state">
+                    <span>👤</span>
+                    Aucun utilisateur enregistré.
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

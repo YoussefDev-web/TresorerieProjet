@@ -21,15 +21,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CopiloteIAService {
 
-    private final CaisseRepository    caisseRepository;
+    private final CaisseRepository caisseRepository;
     private final OperationRepository operationRepository;
 
     // Clé API Gemini — À récupérer sur https://aistudio.google.com/
-// Remplace par TA clé générée
-    private static final String GEMINI_API_KEY = "AIzaSyCf1J1jSt63b5yX6zuqgvB5Wg-lL64_Hn8";
+    // Remplace par TA clé générée
+    private static final String GEMINI_API_KEY = "AIzaSyCkGvbKMoRYigVoKLa0eEG52Pf7U42AptA";
     // Utilisation du modèle Flash qui est gratuit et rapide
     // On utilise la version v1 (stable) et le nom de modèle standard
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_API_KEY;
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key="
+            + GEMINI_API_KEY;
 
     // ─────────────────────────────────────────────────────────────
     // Méthode principale : reçoit la question, construit le contexte,
@@ -37,7 +38,7 @@ public class CopiloteIAService {
     // ─────────────────────────────────────────────────────────────
     public String poserQuestion(String question, List<Map<String, String>> historique) {
         String contexte = construireContexte();
-        String prompt   = construirePrompt(contexte, question);
+        String prompt = construirePrompt(contexte, question);
         return appellerClaude(prompt, historique);
     }
 
@@ -48,60 +49,71 @@ public class CopiloteIAService {
         StringBuilder ctx = new StringBuilder();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate maintenant = LocalDate.now();
-        LocalDate debutMois  = maintenant.withDayOfMonth(1);
+        LocalDate debutMois = maintenant.withDayOfMonth(1);
         LocalDate debutSemaine = maintenant.minusDays(maintenant.getDayOfWeek().getValue() - 1);
 
         // ── 1. Situation des caisses ──────────────────────────────
         ctx.append("=== SITUATION DES CAISSES ===\n");
         List<Caisse> caisses = caisseRepository.findAll();
         BigDecimal totalCash = BigDecimal.ZERO;
-        BigDecimal totalEnc  = BigDecimal.ZERO;
-        BigDecimal totalDec  = BigDecimal.ZERO;
+        BigDecimal totalEnc = BigDecimal.ZERO;
+        BigDecimal totalDec = BigDecimal.ZERO;
 
         for (Caisse c : caisses) {
             BigDecimal cash = orZero(c.getCashDisponible());
-            BigDecimal enc  = orZero(c.getEncaissement());
-            BigDecimal dec  = orZero(c.getDecaissement());
+            BigDecimal enc = orZero(c.getEncaissement());
+            BigDecimal dec = orZero(c.getDecaissement());
             totalCash = totalCash.add(cash);
-            totalEnc  = totalEnc.add(enc);
-            totalDec  = totalDec.add(dec);
-            ctx.append(String.format("Caisse '%s': Cash=%.2f dh | Encaissement=%.2f dh | Décaissement=%.2f dh | Créance=%.2f dh | Dette=%.2f dh\n",
+            totalEnc = totalEnc.add(enc);
+            totalDec = totalDec.add(dec);
+            ctx.append(String.format(
+                    "Caisse '%s': Cash=%.2f dh | Encaissement=%.2f dh | Décaissement=%.2f dh | Créance=%.2f dh | Dette=%.2f dh\n",
                     c.getNom(), cash, enc, dec, orZero(c.getCreance()), orZero(c.getDette())));
         }
-        ctx.append(String.format("TOTAL GLOBAL: Cash=%.2f dh | Encaissements=%.2f dh | Décaissements=%.2f dh\n\n", totalCash, totalEnc, totalDec));
+        ctx.append(String.format("TOTAL GLOBAL: Cash=%.2f dh | Encaissements=%.2f dh | Décaissements=%.2f dh\n\n",
+                totalCash, totalEnc, totalDec));
 
         // ── 2. Opérations du mois en cours ───────────────────────
-        ctx.append("=== OPÉRATIONS DU MOIS EN COURS (").append(debutMois.format(fmt)).append(" → ").append(maintenant.format(fmt)).append(") ===\n");
+        ctx.append("=== OPÉRATIONS DU MOIS EN COURS (").append(debutMois.format(fmt)).append(" → ")
+                .append(maintenant.format(fmt)).append(") ===\n");
         List<Operation> opsMois = operationRepository.findByDateFluxBetweenAndArchiveeFalse(debutMois, maintenant);
         ctx.append("Nombre d'opérations ce mois: ").append(opsMois.size()).append("\n");
 
         Map<String, BigDecimal> encParCaisse = new HashMap<>();
         Map<String, BigDecimal> decParCaisse = new HashMap<>();
-        long enAttente = 0; long annulees = 0; long validees = 0;
+        long enAttente = 0;
+        long annulees = 0;
+        long validees = 0;
 
         for (Operation op : opsMois) {
             if ("Encaissement".equals(op.getNatureFlux()) && !"Annulé".equals(op.getEtat()))
                 encParCaisse.merge(orStr(op.getCaisse()), orZero(op.getMontant()), BigDecimal::add);
             if ("Décaissement".equals(op.getNatureFlux()) && !"Annulé".equals(op.getEtat()))
                 decParCaisse.merge(orStr(op.getCaisse()), orZero(op.getMontant()), BigDecimal::add);
-            if ("En attente".equals(op.getEtat())) enAttente++;
-            if ("Annulé".equals(op.getEtat()))     annulees++;
-            if ("Validé".equals(op.getEtat()))     validees++;
+            if ("En attente".equals(op.getEtat()))
+                enAttente++;
+            if ("Annulé".equals(op.getEtat()))
+                annulees++;
+            if ("Validé".equals(op.getEtat()))
+                validees++;
         }
         ctx.append(String.format("Validées: %d | En attente: %d | Annulées: %d\n", validees, enAttente, annulees));
         encParCaisse.forEach((c, v) -> ctx.append(String.format("  Encaissements %s ce mois: %.2f dh\n", c, v)));
         decParCaisse.forEach((c, v) -> ctx.append(String.format("  Décaissements %s ce mois: %.2f dh\n", c, v)));
 
         // ── 3. Opérations de la semaine ───────────────────────────
-        ctx.append("\n=== OPÉRATIONS DE LA SEMAINE (").append(debutSemaine.format(fmt)).append(" → ").append(maintenant.format(fmt)).append(") ===\n");
-        List<Operation> opsSemaine = operationRepository.findByDateFluxBetweenAndArchiveeFalse(debutSemaine, maintenant);
+        ctx.append("\n=== OPÉRATIONS DE LA SEMAINE (").append(debutSemaine.format(fmt)).append(" → ")
+                .append(maintenant.format(fmt)).append(") ===\n");
+        List<Operation> opsSemaine = operationRepository.findByDateFluxBetweenAndArchiveeFalse(debutSemaine,
+                maintenant);
         BigDecimal encSemaine = opsSemaine.stream()
                 .filter(o -> "Encaissement".equals(o.getNatureFlux()) && !"Annulé".equals(o.getEtat()))
                 .map(o -> orZero(o.getMontant())).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal decSemaine = opsSemaine.stream()
                 .filter(o -> "Décaissement".equals(o.getNatureFlux()) && !"Annulé".equals(o.getEtat()))
                 .map(o -> orZero(o.getMontant())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        ctx.append(String.format("Encaissements semaine: %.2f dh | Décaissements semaine: %.2f dh\n", encSemaine, decSemaine));
+        ctx.append(String.format("Encaissements semaine: %.2f dh | Décaissements semaine: %.2f dh\n", encSemaine,
+                decSemaine));
         ctx.append(String.format("Variation cash semaine: %.2f dh\n\n", encSemaine.subtract(decSemaine)));
 
         // ── 4. Top 20 opérations récentes ─────────────────────────
@@ -162,7 +174,8 @@ public class CopiloteIAService {
     // ─────────────────────────────────────────────────────────────
     private String construirePrompt(String contexte, String question) {
         return "Tu es le Copilote IA de trésorerie de l'entreprise Orienet/Bestmobile. " +
-                "Tu es un expert financier qui analyse les données de trésorerie et répond de façon claire et professionnelle. " +
+                "Tu es un expert financier qui analyse les données de trésorerie et répond de façon claire et professionnelle. "
+                +
                 "Tu réponds dans la même langue que la question (français, arabe ou anglais). " +
                 "Tu utilises les données réelles fournies pour répondre avec précision. " +
                 "Tu formules tes réponses de façon concise avec des chiffres exacts. " +
@@ -204,7 +217,8 @@ public class CopiloteIAService {
             StringBuilder response = new StringBuilder();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String line;
-                while ((line = br.readLine()) != null) response.append(line);
+                while ((line = br.readLine()) != null)
+                    response.append(line);
             }
 
             return extraireTexteReponse(response.toString());
@@ -238,7 +252,8 @@ public class CopiloteIAService {
             // On cherche la fin de la chaîne en ignorant les guillemets échappés \"
             while (textEnd < json.length()) {
                 char c = json.charAt(textEnd);
-                if (c == '"' && json.charAt(textEnd - 1) != '\\') break;
+                if (c == '"' && json.charAt(textEnd - 1) != '\\')
+                    break;
                 textEnd++;
             }
 
@@ -253,11 +268,17 @@ public class CopiloteIAService {
     // ─────────────────────────────────────────────────────────────
     // Utilitaires
     // ─────────────────────────────────────────────────────────────
-    private BigDecimal orZero(BigDecimal v) { return v != null ? v : BigDecimal.ZERO; }
-    private String orStr(String s)          { return s != null ? s : ""; }
+    private BigDecimal orZero(BigDecimal v) {
+        return v != null ? v : BigDecimal.ZERO;
+    }
+
+    private String orStr(String s) {
+        return s != null ? s : "";
+    }
 
     private String escapeJson(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"")
                 .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
     }

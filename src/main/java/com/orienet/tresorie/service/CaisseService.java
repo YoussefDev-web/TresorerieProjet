@@ -67,10 +67,24 @@ public class CaisseService {
                         "Caisse introuvable : " + nomCaisse));
 
         // 2. Calculer chaque total depuis les opérations
-        BigDecimal encaissement = orZero(operationRepository.sumEncaissementByCaisse(nomCaisse));
-        BigDecimal decaissement = orZero(operationRepository.sumDecaissementByCaisse(nomCaisse));
-        BigDecimal creance      = orZero(operationRepository.sumCreanceByCaisse(nomCaisse));
-        BigDecimal dette        = orZero(operationRepository.sumDetteByCaisse(nomCaisse));
+        BigDecimal encaissement;
+        BigDecimal decaissement;
+        BigDecimal creance;
+        BigDecimal dette;
+
+        if ("caisse centrale".equalsIgnoreCase(nomCaisse)) {
+            // La caisse centrale regroupe le total de toutes les autres caisses (toutes les opérations)
+            encaissement = orZero(operationRepository.sumEncaissementGlobal());
+            decaissement = orZero(operationRepository.sumDecaissementGlobal());
+            creance      = orZero(operationRepository.sumCreanceGlobal());
+            dette        = orZero(operationRepository.sumDetteGlobal());
+        } else {
+            // Calcul normal pour une caisse spécifique
+            encaissement = orZero(operationRepository.sumEncaissementByCaisse(nomCaisse));
+            decaissement = orZero(operationRepository.sumDecaissementByCaisse(nomCaisse));
+            creance      = orZero(operationRepository.sumCreanceByCaisse(nomCaisse));
+            dette        = orZero(operationRepository.sumDetteByCaisse(nomCaisse));
+        }
 
         // 3. Cash Disponible = Encaissement - Décaissement
         //    Créance et Dette sont stockées séparément pour affichage

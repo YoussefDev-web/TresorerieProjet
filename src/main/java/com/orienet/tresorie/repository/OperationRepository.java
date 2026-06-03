@@ -101,4 +101,21 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
             "WHERE o.caisse = :caisse AND o.natureFlux = 'Solde de départ' " +
             "AND o.etat = 'Validé'")
     BigDecimal sumSoldeDepartByCaisse(@Param("caisse") String caisse);
+
+    // ─── Totaux globaux (pour Caisse Centrale) ──────────────────────
+    @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
+            "WHERE o.natureFlux = 'Encaissement' AND o.etat = 'Validé'")
+    BigDecimal sumEncaissementGlobal();
+
+    @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
+            "WHERE o.natureFlux = 'Décaissement' AND o.etat = 'Validé'")
+    BigDecimal sumDecaissementGlobal();
+
+    @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
+            "WHERE o.natureFlux = 'Créance' AND o.etat = 'Validé'")
+    BigDecimal sumCreanceGlobal();
+
+    @Query("SELECT COALESCE(SUM(o.montant), 0) FROM Operation o " +
+            "WHERE o.natureFlux = 'Dette' AND o.etat = 'Validé'")
+    BigDecimal sumDetteGlobal();
 }

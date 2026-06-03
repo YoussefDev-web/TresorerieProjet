@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Reporting &amp; Tableau de Bord</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0c1620;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:#0c1620}
+        ::-webkit-scrollbar-thumb{background:#2a4155;border-radius:3px}
+
+        .header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+            background:linear-gradient(135deg,#0a1929 0%,#132f4c 100%);border-bottom:1px solid #1e3a5f;
+            box-shadow:0 2px 12px rgba(0,0,0,.4)}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .dot{width:8px;height:8px;border-radius:50%;background:#00e676;box-shadow:0 0 8px #00e676,0 0 20px rgba(0,230,118,.3);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 8px #00e676,0 0 20px rgba(0,230,118,.3)}50%{box-shadow:0 0 12px #00e676,0 0 30px rgba(0,230,118,.5)}}
+        .header h1{font-size:17px;font-weight:700;letter-spacing:.12em;
+            background:linear-gradient(135deg,#4fc3f7,#00e676);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .back-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#b0cde0;padding:7px 16px;
+            border-radius:6px;text-decoration:none;font-size:12px;transition:all .2s;backdrop-filter:blur(4px)}
+        .back-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
+        .logout-btn{background:rgba(244,67,54,.15);border:1px solid rgba(244,67,54,.3);color:#ef5350;padding:7px 16px;
+            border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+        .logout-btn:hover{background:rgba(244,67,54,.25)}
+        .header-right{display:flex;align-items:center;gap:10px}
+
+        /* KPI Cards */
+        .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:20px 24px 0}
+        .kpi-card{background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+            border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px 20px;
+            backdrop-filter:blur(10px);transition:all .3s;position:relative;overflow:hidden}
+        .kpi-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.3);border-color:rgba(255,255,255,.15)}
+        .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+        .kpi-card.green::before{background:linear-gradient(90deg,#00e676,#69f0ae)}
+        .kpi-card.red::before{background:linear-gradient(90deg,#ff5252,#ff8a80)}
+        .kpi-card.blue::before{background:linear-gradient(90deg,#448aff,#82b1ff)}
+        .kpi-card.orange::before{background:linear-gradient(90deg,#ff9100,#ffd180)}
+        .kpi-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7a9bb5;margin-bottom:8px}
+        .kpi-value{font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+        .kpi-card.green .kpi-value{color:#69f0ae}
+        .kpi-card.red .kpi-value{color:#ff8a80}
+        .kpi-card.blue .kpi-value{color:#82b1ff}
+        .kpi-card.orange .kpi-value{color:#ffd180}
+        .kpi-sub{font-size:11px;color:#5a7a95;margin-top:4px}
+
+        /* Dashboard Grid */
+        .dashboard{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 24px 24px}
+
+        .chart-card{background:linear-gradient(180deg,rgba(19,47,76,.8),rgba(12,22,32,.9));
+            border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:0;overflow:hidden;
+            box-shadow:0 4px 15px rgba(0,0,0,.2);transition:all .3s}
+        .chart-card:hover{box-shadow:0 8px 30px rgba(0,0,0,.35);border-color:rgba(255,255,255,.12)}
+        .chart-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+            border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+        .chart-header h3{font-size:13px;font-weight:700;letter-spacing:.05em;color:#e2ecf4;display:flex;align-items:center;gap:8px}
+        .chart-header h3 .icon{font-size:16px}
+        .chart-body{padding:16px 20px 20px}
+        .chart-wrapper{position:relative;height:280px;width:100%}
+        .chart-wrapper-lg{position:relative;height:380px;width:100%}
+        .full-width{grid-column:1/-1}
+
+        /* Caisse Selector */
+        .caisse-selector{display:flex;align-items:center;gap:10px}
+        .caisse-selector label{font-size:11px;font-weight:600;color:#7a9bb5;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+        .caisse-select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#e2ecf4;
+            padding:6px 32px 6px 12px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;
+            appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a9bb5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat:no-repeat;background-position:right 10px center;transition:all .2s}
+        .caisse-select:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.1)}
+        .caisse-select:focus{outline:none;border-color:#448aff;box-shadow:0 0 0 2px rgba(68,138,255,.2)}
+        .caisse-select option{background:#132f4c;color:#e2ecf4}
+
+        /* Loading */
+        .loading{display:flex;align-items:center;justify-content:center;height:100%;gap:8px;color:#5a7a95;font-size:13px}
+        .spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.1);border-top-color:#448aff;border-radius:50%;animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        @media(max-width:900px){
+            .kpi-row{grid-template-columns:repeat(2,1fr)}
+            .dashboard{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <div class="dot"></div>
+        <h1>📊 REPORTING &amp; TABLEAU DE BORD</h1>
+    </div>
+    <div class="header-right">
+        <a href="/flux-tresorerie" class="back-btn">← Retour au flux</a>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-btn">⏻ Déconnexion</button>
+        </form>
+    </div>
+</div>
+
+<!-- KPI Summary -->
+<div class="kpi-row">
+    <div class="kpi-card green">
+        <div class="kpi-label">Total Encaissements</div>
+        <div class="kpi-value" id="kpiEnc">--</div>
+        <div class="kpi-sub">Opérations validées</div>
+    </div>
+    <div class="kpi-card red">
+        <div class="kpi-label">Total Décaissements</div>
+        <div class="kpi-value" id="kpiDec">--</div>
+        <div class="kpi-sub">Opérations validées</div>
+    </div>
+    <div class="kpi-card blue">
+        <div class="kpi-label">Solde Net</div>
+        <div class="kpi-value" id="kpiSolde">--</div>
+        <div class="kpi-sub">Encaissements − Décaissements</div>
+    </div>
+    <div class="kpi-card orange">
+        <div class="kpi-label">Nombre de Caisses</div>
+        <div class="kpi-value" id="kpiCaisses">--</div>
+        <div class="kpi-sub">Caisses actives</div>
+    </div>
+</div>
+
+<div class="dashboard">
+    <!-- Répartition des Opérations (Doughnuts) -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><span class="icon">🍩</span> Répartition (Flux vs Engagements)</h3>
+        </div>
+        <div class="chart-body" style="display: flex; gap: 10px;">
+            <div class="chart-wrapper" style="flex: 1;"><canvas id="natureChart"></canvas></div>
+            <div class="chart-wrapper" style="flex: 1;"><canvas id="engagementChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Cash par Caisse (Bar) -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><span class="icon">🏦</span> Cash Disponible par Caisse</h3>
+        </div>
+        <div class="chart-body">
+            <div class="chart-wrapper"><canvas id="caisseChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Évolution Mensuelle (Line) — Full width + Caisse selector -->
+    <div class="chart-card full-width">
+        <div class="chart-header">
+            <h3><span class="icon">📈</span> Évolution Mensuelle — Flux et Solde Net</h3>
+            <div class="caisse-selector">
+                <label>Caisse :</label>
+                <select id="caisseFilter" class="caisse-select">
+                    <option value="all">🏛️ Toutes les caisses (Général)</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-body">
+            <div class="chart-wrapper-lg"><canvas id="evolutionChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Global Chart.js Config ──
+    Chart.defaults.color = '#7a9bb5';
+    Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
+    Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+
+    // Disable datalabels globally, enable per-chart
+    Chart.register(ChartDataLabels);
+    Chart.defaults.plugins.datalabels = { display: false };
+
+    let evolutionChartInstance = null;
+
+    function fmt(n) {
+        return new Intl.NumberFormat('fr-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    }
+
+    // ── Load Dashboard ──
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/api/reporting/stats');
+            const data = await res.json();
+
+            // Populate KPIs
+            const fluxLabels = data.flux.labels;
+            const fluxData = data.flux.data;
+            let enc = 0, dec = 0, cre = 0, det = 0;
+            fluxLabels.forEach((l, i) => {
+                if (l === 'Encaissement') enc = fluxData[i];
+                else if (l === 'Décaissement') dec = fluxData[i];
+                else if (l === 'Créance') cre = fluxData[i];
+                else if (l === 'Dette') det = fluxData[i];
+            });
+            document.getElementById('kpiEnc').textContent = fmt(enc) + ' dh';
+            document.getElementById('kpiDec').textContent = fmt(dec) + ' dh';
+            document.getElementById('kpiSolde').textContent = fmt(enc - dec) + ' dh';
+            document.getElementById('kpiCaisses').textContent = data.caisses.labels.length;
+
+            // Populate caisse dropdown
+            const sel = document.getElementById('caisseFilter');
+            (data.caisseNames || []).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = '📦 ' + name;
+                sel.appendChild(opt);
+            });
+
+            renderNatureCharts(data.flux);
+            renderCaisseChart(data.caisses);
+            renderEvolutionChart(data.evolution);
+        } catch (e) {
+            console.error('Erreur chargement dashboard', e);
+        }
+    }
+
+    // ── 1. Doughnuts: Répartition ──
+    function renderNatureCharts(fluxData) {
+        let enc = 0, dec = 0, cre = 0, det = 0;
+        fluxData.labels.forEach((l, i) => {
+            if (l === 'Encaissement') enc = fluxData.data[i];
+            else if (l === 'Décaissement') dec = fluxData.data[i];
+            else if (l === 'Créance') cre = fluxData.data[i];
+            else if (l === 'Dette') det = fluxData.data[i];
+        });
+
+        const ctx1 = document.getElementById('natureChart').getContext('2d');
+        const ctx2 = document.getElementById('engagementChart').getContext('2d');
+
+        function getDoughnutOptions(title) {
+            return {
+                responsive: true, maintainAspectRatio: false, cutout: '60%',
+                animation: { animateRotate: true, duration: 1200, easing: 'easeOutQuart' },
+                plugins: {
+                    title: { display: true, text: title, color: '#e2ecf4', font: { size: 12, weight: '700' }, padding: {bottom: 10} },
+                    legend: { position: 'bottom', labels: { padding: 10, usePointStyle: true, pointStyle: 'circle', font: { size: 11, weight: '600' } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(12,22,32,.95)', borderColor: 'rgba(255,255,255,.15)', borderWidth: 1,
+                        titleFont: { size: 12 }, bodyFont: { size: 11 }, padding: 10, cornerRadius: 8,
+                        callbacks: { label: ctx => ' ' + ctx.label + ': ' + fmt(ctx.parsed) + ' dh' }
+                    },
+                    datalabels: {
+                        display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+                        color: '#fff', font: { weight: '700', size: 10 },
+                        formatter: (val, ctx) => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return total > 0 ? Math.round(val / total * 100) + '%' : '';
+                        }
+                    }
+                }
+            };
+        }
+
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Encaissement', 'Décaissement'],
+                datasets: [{
+                    data: [enc, dec],
+                    backgroundColor: ['#69f0aedd', '#ff8a80dd'],
+                    borderColor: '#0c1620', borderWidth: 2, hoverBorderColor: '#fff', hoverBorderWidth: 2, hoverOffset: 6
+                }]
+            },
+            options: getDoughnutOptions('Flux Réalisés')
+        });
+
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Créance', 'Dette'],
+                datasets: [{
+                    data: [cre, det],
+                    backgroundColor: ['#82b1ffdd', '#ffd180dd'],
+                    borderColor: '#0c1620', borderWidth: 2, hoverBorderColor: '#fff', hoverBorderWidth: 2, hoverOffset: 6
+                }]
+            },
+            options: getDoughnutOptions('Engagements')
+        });
+    }
+
+    // ── 2. Bar: Cash par Caisse ──
+    function renderCaisseChart(caisseData) {
+        const ctx = document.getElementById('caisseChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(68,138,255,.8)');
+        gradient.addColorStop(1, 'rgba(68,138,255,.15)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: caisseData.labels,
+                datasets: [{
+                    label: 'Cash Disponible (dh)',
+                    data: caisseData.data,
+                    backgroundColor: gradient,
+                    borderColor: '#448aff',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    maxBarThickness: 80,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1000, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(12,22,32,.95)',
+                        borderColor: 'rgba(255,255,255,.15)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: { label: ctx => ' Cash: ' + fmt(ctx.parsed.y) + ' dh' }
+                    },
+                    datalabels: {
+                        display: true,
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#82b1ff',
+                        font: { weight: '700', size: 11, family: "'IBM Plex Mono', monospace" },
+                        formatter: val => fmt(val)
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: '600' }, color: '#7a9bb5' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,.04)' },
+                        ticks: {
+                            font: { size: 10, family: "'IBM Plex Mono', monospace" },
+                            callback: v => fmt(v)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── 3. Evolution Mixed Chart ──
+    function renderEvolutionChart(evoData) {
+        const ctx = document.getElementById('evolutionChart').getContext('2d');
+
+        // Destroy previous instance
+        if (evolutionChartInstance) { evolutionChartInstance.destroy(); }
+
+        // Format labels (YYYY-MM → MMM YYYY)
+        const monthNames = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+        const labels = evoData.labels.map(l => {
+            const [y, m] = l.split('-');
+            return monthNames[parseInt(m) - 1] + ' ' + y;
+        });
+
+        evolutionChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Solde Net Mensuel',
+                        data: evoData.solde,
+                        borderColor: '#448aff',
+                        backgroundColor: '#448aff',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#0c1620',
+                        pointBorderColor: '#448aff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#448aff',
+                        pointHoverBorderWidth: 3,
+                        order: 1
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Encaissements',
+                        data: evoData.encaissements,
+                        backgroundColor: 'rgba(105,240,174,.8)',
+                        borderColor: '#69f0ae',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 60,
+                        order: 2
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Décaissements',
+                        data: evoData.decaissements,
+                        backgroundColor: 'rgba(255,138,128,.8)',
+                        borderColor: '#ff8a80',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 60,
+                        order: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1200, easing: 'easeOutQuart' },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { padding: 20, usePointStyle: true, pointStyle: 'circle', font: { size: 12, weight: '600' } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(12,22,32,.95)',
+                        borderColor: 'rgba(255,255,255,.15)',
+                        borderWidth: 1,
+                        padding: 14,
+                        cornerRadius: 10,
+                        titleFont: { size: 13, weight: '700' },
+                        bodyFont: { size: 12 },
+                        bodySpacing: 6,
+                        callbacks: {
+                            label: ctx => {
+                                let icon = '▪';
+                                if (ctx.dataset.label === 'Encaissements') icon = '▲';
+                                if (ctx.dataset.label === 'Décaissements') icon = '▼';
+                                if (ctx.dataset.label === 'Solde Net Mensuel') icon = '◆';
+                                return ' ' + icon + ' ' + ctx.dataset.label + ': ' + fmt(ctx.parsed.y) + ' dh';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: '500' }, maxRotation: 45, minRotation: 0 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,.04)' },
+                        ticks: {
+                            font: { size: 10, family: "'IBM Plex Mono', monospace" },
+                            callback: v => fmt(v) + ' dh'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Caisse filter change handler ──
+    document.getElementById('caisseFilter').addEventListener('change', async function() {
+        const caisse = this.value;
+        try {
+            const res = await fetch('/api/reporting/evolution?caisse=' + encodeURIComponent(caisse));
+            const data = await res.json();
+            renderEvolutionChart(data);
+        } catch (e) {
+            console.error('Erreur chargement évolution par caisse', e);
+        }
+    });
+
+    // ── Init ──
+    window.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ import com.orienet.tresorie.model.Operation;
 import com.orienet.tresorie.repository.CaisseRepository;
 import com.orienet.tresorie.repository.OperationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -24,13 +25,14 @@ public class CopiloteIAService {
     private final CaisseRepository caisseRepository;
     private final OperationRepository operationRepository;
 
-    // Clé API Gemini — À récupérer sur https://aistudio.google.com/
-    // Remplace par TA clé générée
-    private static final String GEMINI_API_KEY = "AIzaSyCkGvbKMoRYigVoKLa0eEG52Pf7U42AptA";
-    // Utilisation du modèle Flash qui est gratuit et rapide
-    // On utilise la version v1 (stable) et le nom de modèle standard
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key="
-            + GEMINI_API_KEY;
+    // Clé API Gemini — Ne pas coder en dur pour éviter les fuites sur GitHub
+    @Value("${gemini.api.key:VOTRE_NOUVELLE_CLE_API_ICI}")
+    private String geminiApiKey;
+
+    private String getGeminiApiUrl() {
+        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key="
+                + geminiApiKey;
+    }
 
     // ─────────────────────────────────────────────────────────────
     // Méthode principale : reçoit la question, construit le contexte,
@@ -199,7 +201,7 @@ public class CopiloteIAService {
                     "}]" +
                     "}";
 
-            URL url = new URL(GEMINI_API_URL);
+            URL url = new URL(getGeminiApiUrl());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");

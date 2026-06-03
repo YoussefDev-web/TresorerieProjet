@@ -225,5 +225,13 @@ public class OperationService {
     private void recalculer(String nom) {
         if (nom != null && !nom.isBlank())
             caisseService.recalculerTotaux(nom);
+
+        // Mettre à jour la Caisse Centrale si elle existe et n'est pas celle qu'on vient de modifier
+        if (nom == null || !"caisse centrale".equalsIgnoreCase(nom)) {
+            caisseRepository.findAll().stream()
+                    .filter(c -> "caisse centrale".equalsIgnoreCase(c.getNom()))
+                    .findFirst()
+                    .ifPresent(c -> caisseService.recalculerTotaux(c.getNom()));
+        }
     }
 }

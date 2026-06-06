@@ -1,12 +1,81 @@
-version: '3.8'
-
 services:
-  # Application Spring Boot
+  # ============================================================
+  # Application Spring Boot - Trésorerie
+  # ============================================================
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: tresorie-app
+    restart: unless-stopped
+
+    # --- Ports ---
     ports:
       - "8080:8080"
+
+    # --- Variables d'environnement (secrets externalisés) ---
+    environment:
+      # Surcharge des propriétés Spring Boot via env vars
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/tresorie_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-}
+      - SPRING_H2_CONSOLE_ENABLED=${H2_CONSOLE_ENABLED:-false}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Profil Spring actif
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      # Timezone
+      - TZ=Africa/Casablanca
+
+    # --- Volumes persistants ---
     volumes:
-      # On relie le dossier ./data du projet au dossier /app/data du conteneur Docker
-      - "./data:/app/data"
+      - tresorie-data:/app/data
+
+    # --- Limites de ressources (protection contre les fuites mémoire) ---
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+
+    # --- Health check ---
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+    # --- Sécurité du conteneur ---
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+
+    # --- Réseau isolé ---
+    networks:
+      - tresorie-network
+
+    # --- Logging ---
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ============================================================
+# Volumes nommés (persistance des données)
+# ============================================================
+volumes:
+  tresorie-data:
+    driver: local
+
+# ============================================================
+# Réseau isolé
+# ============================================================
+networks:
+  tresorie-network:
+    driver: bridge

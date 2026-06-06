@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gestion des Utilisateurs — Admin</title>
+    <title>Gestion des Caisses — Admin</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
@@ -177,17 +177,17 @@
             overflow-x: auto
         }
 
-        .users-tbl {
+        .caisses-tbl {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px
         }
 
-        .users-tbl thead tr {
+        .caisses-tbl thead tr {
             background: #1b2d3d
         }
 
-        .users-tbl thead th {
+        .caisses-tbl thead th {
             padding: 10px 14px;
             text-align: left;
             color: #7fa3be;
@@ -198,34 +198,34 @@
             white-space: nowrap
         }
 
-        .users-tbl thead th:last-child {
+        .caisses-tbl thead th:last-child {
             border-right: none
         }
 
-        .users-tbl tbody tr {
+        .caisses-tbl tbody tr {
             border-bottom: 1px solid #1e3245;
             transition: background .1s
         }
 
-        .users-tbl tbody tr:nth-child(even) {
+        .caisses-tbl tbody tr:nth-child(even) {
             background: #1b2d3d
         }
 
-        .users-tbl tbody tr:nth-child(odd) {
+        .caisses-tbl tbody tr:nth-child(odd) {
             background: #14202b
         }
 
-        .users-tbl tbody tr:hover {
+        .caisses-tbl tbody tr:hover {
             background: #1e3345 !important
         }
 
-        .users-tbl tbody td {
+        .caisses-tbl tbody td {
             padding: 9px 14px;
             border-right: 1px solid #1e3245;
             color: #c8daea
         }
 
-        .users-tbl tbody td:last-child {
+        .caisses-tbl tbody td:last-child {
             border-right: none
         }
 
@@ -236,56 +236,27 @@
             width: 44px
         }
 
-        .td-user {
+        .td-nom {
             color: #e2f0ff;
             font-weight: 500
         }
 
-        .td-role {
-            width: 130px
+        .td-montant {
+            font-family: 'IBM Plex Mono', monospace;
+            text-align: right;
+            white-space: nowrap
         }
 
-        .td-statut {
-            width: 80px
+        .montant-positif {
+            color: #4ade80
         }
 
-        /* ── Badges ── */
-        .badge-admin {
-            background: #1a3a5a;
-            color: #4fa8e8;
-            border: 1px solid #2a5a8a55;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10.5px;
-            font-weight: 600
+        .montant-negatif {
+            color: #f87171
         }
 
-        .badge-user {
-            background: #14532d22;
-            color: #4ade80;
-            border: 1px solid #14532d55;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10.5px;
-            font-weight: 600
-        }
-
-        .badge-actif {
-            background: #14532d22;
-            color: #4ade80;
-            border: 1px solid #14532d55;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px
-        }
-
-        .badge-inactif {
-            background: #7f1d1d22;
-            color: #f87171;
-            border: 1px solid #7f1d1d55;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px
+        .montant-neutre {
+            color: #c8daea
         }
 
         /* ── Actions ── */
@@ -309,25 +280,9 @@
             background: #7f1d1d22
         }
 
-        .edit-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: 1px solid #2a5a8a55;
-            color: #4fa8e8;
-            padding: 4px 10px;
-            border-radius: 3px;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: none;
-            font-family: inherit;
-            transition: background .1s;
-            margin-right: 4px
-        }
-
-        .edit-btn:hover {
-            background: #2a5a8a22
+        .del-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed
         }
 
         /* ── Empty state ── */
@@ -360,6 +315,17 @@
         .info-box strong {
             color: #4fa8e8
         }
+
+        /* ── Badge centrale ── */
+        .badge-centrale {
+            background: #1a3a5a;
+            color: #4fa8e8;
+            border: 1px solid #2a5a8a55;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10.5px;
+            font-weight: 600
+        }
     </style>
 </head>
 
@@ -369,10 +335,11 @@
     <div class="header">
         <div class="header-left">
             <div class="dot"></div>
-            <h1>👥 GESTION DES UTILISATEURS</h1>
+            <h1>🏦 GESTION DES CAISSES</h1>
         </div>
         <div class="header-right">
             <a href="/flux-tresorerie" class="back-btn">← Tableau de bord</a>
+            <a href="/admin/utilisateurs" class="back-btn">👥 Utilisateurs</a>
             <form th:action="@{/logout}" method="post" style="margin:0">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <button type="submit" class="logout-btn">⏻ Déconnexion</button>
@@ -385,56 +352,67 @@
 
     <!-- Page header -->
     <div class="page-header">
-        <h2>Comptes utilisateurs</h2>
-        <span class="badge" th:text="${#lists.size(utilisateurs)} + ' compte(s)'">0 compte(s)</span>
+        <h2>Caisses de trésorerie</h2>
+        <span class="badge" th:text="${#lists.size(caisses)} + ' caisse(s)'">0 caisse(s)</span>
     </div>
 
     <!-- Bouton ajouter -->
-    <a href="/admin/utilisateurs/nouveau" class="add-btn">➕ Ajouter un utilisateur</a>
+    <a href="/admin/caisses/nouvelle" class="add-btn">➕ Ajouter une caisse</a>
 
     <!-- Tableau -->
     <div class="table-wrap">
-        <table class="users-tbl">
+        <table class="caisses-tbl">
             <thead>
                 <tr>
                     <th class="td-id">#</th>
                     <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Identifiant</th>
-                    <th class="td-role">Rôle</th>
-                    <th class="td-statut">Statut</th>
+                    <th>Encaissement</th>
+                    <th>Décaissement</th>
+                    <th>Créance</th>
+                    <th>Dette</th>
+                    <th>Cash Disponible</th>
                     <th style="width:80px">Action</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="u : ${utilisateurs}">
-                    <td class="td-id" th:text="${u.id}">—</td>
-                    <td class="td-user" th:text="${u.nom}">—</td>
-                    <td th:text="${u.prenom}">—</td>
-                    <td><span style="font-family:'IBM Plex Mono',monospace;color:#7fb8e8"
-                            th:text="${u.username}">—</span></td>
-                    <td>
-                        <span th:if="${u.role == 'ROLE_ADMIN'}" class="badge-admin">🛡️ Admin</span>
-                        <span th:if="${u.role == 'ROLE_UTILISATEUR'}" class="badge-user">👤 Utilisateur</span>
+                <tr th:each="c : ${caisses}">
+                    <td class="td-id" th:text="${c.id}">—</td>
+                    <td class="td-nom">
+                        <span th:text="${c.nom}">—</span>
+                        <span th:if="${#strings.equalsIgnoreCase(c.nom, 'caisse centrale')}" class="badge-centrale">🌐
+                            Centrale</span>
                     </td>
+                    <td class="td-montant montant-positif"
+                        th:text="${c.encaissement != null ? #numbers.formatDecimal(c.encaissement, 1, 'COMMA', 2, 'POINT') + ' dh' : '0,00 dh'}">
+                        0,00 dh</td>
+                    <td class="td-montant montant-negatif"
+                        th:text="${c.decaissement != null ? #numbers.formatDecimal(c.decaissement, 1, 'COMMA', 2, 'POINT') + ' dh' : '0,00 dh'}">
+                        0,00 dh</td>
+                    <td class="td-montant montant-neutre"
+                        th:text="${c.creance != null ? #numbers.formatDecimal(c.creance, 1, 'COMMA', 2, 'POINT') + ' dh' : '0,00 dh'}">
+                        0,00 dh</td>
+                    <td class="td-montant montant-neutre"
+                        th:text="${c.dette != null ? #numbers.formatDecimal(c.dette, 1, 'COMMA', 2, 'POINT') + ' dh' : '0,00 dh'}">
+                        0,00 dh</td>
+                    <td class="td-montant"
+                        th:classappend="${c.cashDisponible != null && c.cashDisponible >= 0} ? 'montant-positif' : 'montant-negatif'"
+                        th:text="${c.cashDisponible != null ? #numbers.formatDecimal(c.cashDisponible, 1, 'COMMA', 2, 'POINT') + ' dh' : '0,00 dh'}">
+                        0,00 dh</td>
                     <td>
-                        <span th:if="${u.actif}" class="badge-actif">✓ Actif</span>
-                        <span th:unless="${u.actif}" class="badge-inactif">✕ Inactif</span>
-                    </td>
-                    <td>
-                        <a th:href="@{/admin/utilisateurs/modifier/{id}(id=${u.id})}" class="edit-btn">✏️</a>
-                        <form class="del-form" th:action="@{/admin/utilisateurs/supprimer/{id}(id=${u.id})}"
-                            method="post" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                        <form class="del-form" th:action="@{/admin/caisses/supprimer/{id}(id=${c.id})}" method="post"
+                            onsubmit="return confirm('Supprimer cette caisse ? Les opérations associées ne seront pas supprimées.')">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit" class="del-btn">🗑️</button>
+                            <button type="submit" class="del-btn"
+                                th:disabled="${#strings.equalsIgnoreCase(c.nom, 'caisse centrale')}"
+                                th:title="${#strings.equalsIgnoreCase(c.nom, 'caisse centrale') ? 'La caisse centrale ne peut pas être supprimée' : 'Supprimer cette caisse'}">🗑️</button>
                         </form>
                     </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(utilisateurs)}">
-                    <td colspan="7" style="padding:0;border:none">
+                <tr th:if="${#lists.isEmpty(caisses)}">
+                    <td colspan="8" style="padding:0;border:none">
                         <div class="empty-state">
-                            <span>👤</span>
-                            Aucun utilisateur enregistré.
+                            <span>🏦</span>
+                            Aucune caisse enregistrée.
                         </div>
                     </td>
                 </tr>

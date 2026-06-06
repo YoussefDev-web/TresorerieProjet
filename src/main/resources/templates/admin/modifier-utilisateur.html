@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modifier Utilisateur — Admin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #14202b;
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: #c8daea;
+            min-height: 100vh
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: 1px solid #1e3245;
+            background: #0f1e2b
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4fa8e8;
+            box-shadow: 0 0 6px #4fa8e8
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            color: #4fa8e8
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .back-btn {
+            background: #223347;
+            border: 1px solid #2a4155;
+            color: #b0cde0;
+            padding: 6px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background .15s
+        }
+
+        .back-btn:hover {
+            background: #2a4155
+        }
+
+        .logout-btn {
+            background: #4a1a1a;
+            border: 1px solid #7f1d1d55;
+            color: #f87171;
+            padding: 6px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background .15s
+        }
+
+        .logout-btn:hover {
+            background: #6a1a1a
+        }
+
+        /* ── Alert ── */
+        .alert {
+            margin: 12px 20px 0;
+            padding: 9px 14px;
+            border-radius: 4px;
+            font-size: 12.5px
+        }
+
+        .alert-error {
+            background: #7f1d1d22;
+            border: 1px solid #7f1d1d;
+            color: #f87171
+        }
+
+        .alert-success {
+            background: #14532d22;
+            border: 1px solid #14532d;
+            color: #4ade80
+        }
+
+        /* ── Formulaire ── */
+        .form-wrap {
+            display: flex;
+            justify-content: center;
+            padding: 32px 20px
+        }
+
+        .form-card {
+            background: #1b2d3d;
+            border: 1px solid #2a4155;
+            border-radius: 8px;
+            width: 480px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px #00000060
+        }
+
+        .form-card-header {
+            background: #1a3a5a;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a4155;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .form-card-header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            color: #e2f0ff
+        }
+
+        .form-body {
+            padding: 24px
+        }
+
+        /* ── Champs ── */
+        .field {
+            margin-bottom: 18px
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #7fa3be;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            margin-bottom: 7px
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            background: #14202b;
+            border: 1px solid #2a4155;
+            border-radius: 5px;
+            color: #e2f0ff;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s
+        }
+
+        .field input:focus,
+        .field select:focus {
+            outline: none;
+            border-color: #4fa8e8;
+            box-shadow: 0 0 0 3px #4fa8e820
+        }
+
+        .field input::placeholder {
+            color: #3a5a72
+        }
+
+        .field select option {
+            background: #14202b
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        /* ── Hint ── */
+        .field-hint {
+            font-size: 10.5px;
+            color: #4a6a82;
+            margin-top: 5px;
+            font-style: italic
+        }
+
+        /* ── Info rôle ── */
+        .role-info {
+            background: #14202b;
+            border: 1px solid #1e3245;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: #4a6a82;
+            line-height: 1.8;
+            margin-top: 8px
+        }
+
+        .role-info strong {
+            color: #7fa3be
+        }
+
+        /* ── Toggle switch ── */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px
+        }
+
+        .toggle-label {
+            font-size: 12.5px;
+            color: #c8daea
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            cursor: pointer
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0
+        }
+
+        .toggle .slider {
+            position: absolute;
+            inset: 0;
+            background: #2a4155;
+            border-radius: 12px;
+            transition: background .2s
+        }
+
+        .toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #7fa3be;
+            border-radius: 50%;
+            transition: transform .2s, background .2s
+        }
+
+        .toggle input:checked+.slider {
+            background: #1a5c38
+        }
+
+        .toggle input:checked+.slider::before {
+            transform: translateX(20px);
+            background: #6effa8
+        }
+
+        /* ── Boutons ── */
+        .form-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px
+        }
+
+        .btn-save {
+            flex: 1;
+            background: linear-gradient(135deg, #1a4a6a, #0f2a42);
+            border: 1px solid #2a6a9a;
+            color: #6ecfff;
+            padding: 11px;
+            border-radius: 5px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .15s
+        }
+
+        .btn-save:hover {
+            background: linear-gradient(135deg, #226a8a, #184a6a)
+        }
+
+        .btn-cancel {
+            background: #223347;
+            border: 1px solid #2a4155;
+            color: #b0cde0;
+            padding: 11px 20px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s
+        }
+
+        .btn-cancel:hover {
+            background: #2a4155
+        }
+
+        /* ── Séparateur ── */
+        .sep {
+            height: 1px;
+            background: #1e3245;
+            margin: 16px 0
+        }
+
+        /* ── User ID badge ── */
+        .user-id-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #1a3a5a;
+            border: 1px solid #2a5a8a55;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'IBM Plex Mono', monospace;
+            color: #4fa8e8;
+            font-weight: 600
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="dot"></div>
+            <h1>✏️ MODIFIER UTILISATEUR</h1>
+        </div>
+        <div class="header-right">
+            <a href="/admin/utilisateurs" class="back-btn">← Retour à la liste</a>
+            <form th:action="@{/logout}" method="post" style="margin:0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="logout-btn">⏻ Déconnexion</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${erreur}" class="alert alert-error" th:text="${erreur}"></div>
+    <div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
+
+    <!-- Formulaire -->
+    <div class="form-wrap">
+        <div class="form-card">
+            <div class="form-card-header">
+                <span>✏️</span>
+                <h2>MODIFIER LE COMPTE</h2>
+                <span class="user-id-badge" th:text="'ID #' + ${utilisateur.id}">ID #0</span>
+            </div>
+            <div class="form-body">
+                <form th:action="@{/admin/utilisateurs/modifier/{id}(id=${utilisateur.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <!-- Nom / Prénom -->
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="nom">Nom</label>
+                            <input id="nom" type="text" name="nom" th:value="${utilisateur.nom}"
+                                placeholder="Ex: Benali" required />
+                        </div>
+                        <div class="field">
+                            <label for="prenom">Prénom</label>
+                            <input id="prenom" type="text" name="prenom" th:value="${utilisateur.prenom}"
+                                placeholder="Ex: Youssef" />
+                        </div>
+                    </div>
+
+                    <div class="sep"></div>
+
+                    <!-- Identifiant -->
+                    <div class="field">
+                        <label for="username">Identifiant de connexion</label>
+                        <input id="username" type="text" name="username" th:value="${utilisateur.username}"
+                            placeholder="Ex: ybenali" required autocomplete="off" />
+                    </div>
+
+                    <!-- Mot de passe -->
+                    <div class="field">
+                        <label for="password">Nouveau mot de passe</label>
+                        <input id="password" type="password" name="password"
+                            placeholder="Laisser vide pour conserver l'actuel" autocomplete="new-password"
+                            minlength="6" />
+                        <div class="field-hint">⚠ Laissez ce champ vide si vous ne souhaitez pas changer le mot de
+                            passe.</div>
+                    </div>
+
+                    <div class="sep"></div>
+
+                    <!-- Rôle -->
+                    <div class="field">
+                        <label for="role">Rôle</label>
+                        <select id="role" name="role" required>
+                            <option value="ROLE_UTILISATEUR" th:selected="${utilisateur.role == 'ROLE_UTILISATEUR'}">
+                                👤 Utilisateur — Accès complet aux opérations
+                            </option>
+                            <option value="ROLE_ADMIN" th:selected="${utilisateur.role == 'ROLE_ADMIN'}">
+                                🛡️ Administrateur — Lecture seule + gestion utilisateurs
+                            </option>
+                        </select>
+                    </div>
+                    <div class="sep"></div>
+
+                    <!-- Statut actif -->
+                    <div class="field">
+                        <label>Statut du compte</label>
+                        <div class="toggle-wrap">
+                            <label class="toggle">
+                                <input type="checkbox" name="actif" value="true" th:checked="${utilisateur.actif}" />
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label"
+                                th:text="${utilisateur.actif ? '✓ Compte actif' : '✕ Compte désactivé'}">
+                                ✓ Compte actif
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="form-footer">
+                        <a href="/admin/utilisateurs" class="btn-cancel">Annuler</a>
+                        <button type="submit" class="btn-save">💾 Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update toggle label dynamically
+        document.querySelector('.toggle input').addEventListener('change', function () {
+            const label = document.querySelector('.toggle-label');
+            label.textContent = this.checked ? '✓ Compte actif' : '✕ Compte désactivé';
+        });
+    </script>
+
+</body>
+
+</html>

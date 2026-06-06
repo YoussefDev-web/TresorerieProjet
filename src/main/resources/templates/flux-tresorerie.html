@@ -824,8 +824,8 @@
                 <button class="tbtn" onclick="telechargerCSV()" style="flex:1; justify-content:center; color:#4ade80; border-color:#2a6a48; background:#1a3a28" onmouseover="this.style.background='#1f4a30'" onmouseout="this.style.background='#1a3a28'">⬇️ Télécharger</button>
             </div>
 
-            <!-- Reporting / Tableau de Bord -->
-            <div class="btn-row">
+            <!-- Reporting / Tableau de Bord — ADMIN seulement -->
+            <div class="btn-row" sec:authorize="hasRole('ADMIN')">
                 <a href="/reporting" class="tbtn" style="flex:1; justify-content:center; background:#1b3a4b; border-color:#2a5a7a; color:#4fa8e8" onmouseover="this.style.background='#2a5a7a'" onmouseout="this.style.background='#1b3a4b'">📊 Tableau de Bord</a>
             </div>
 
@@ -844,13 +844,18 @@
                 <a href="/admin/utilisateurs" class="tbtn tbtn-admin" style="flex:1; justify-content:center">👥 Gestion Utilisateurs</a>
             </div>
 
+            <!-- Gestion des Caisses — ADMIN seulement -->
+            <div class="btn-row" sec:authorize="hasRole('ADMIN')">
+                <a href="/admin/caisses" class="tbtn tbtn-admin" style="flex:1; justify-content:center">🏦 Gestion des Caisses</a>
+            </div>
+
             <!-- Journal d'Activités — ADMIN seulement -->
             <div class="btn-row" sec:authorize="hasRole('ADMIN')">
                 <a href="/admin/activites" class="tbtn" style="flex:1; justify-content:center; background:#2a1f0f; border-color:#5a3a10; color:#e8a030" onmouseover="this.style.background='#3a2a10'" onmouseout="this.style.background='#2a1f0f'">📝 Journal d'Activités</a>
             </div>
 
-            <!-- Actualiser les Soldes -->
-            <div class="btn-row">
+            <!-- Actualiser les Soldes — UTILISATEUR seulement -->
+            <div class="btn-row" sec:authorize="hasRole('UTILISATEUR')">
                 <a href="/api/caisse/recalculate-all" class="tbtn" style="flex:1; justify-content:center; background:#0f5a2a; border-color:#2a8a4a; color:#fff" onmouseover="this.style.background='#157032'" onmouseout="this.style.background='#0f5a2a'">🔄 Actualiser les Soldes</a>
             </div>
 

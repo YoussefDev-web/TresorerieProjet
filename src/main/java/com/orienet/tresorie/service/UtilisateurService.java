@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,10 @@ public class UtilisateurService {
         }
     }
 
+    public Optional<Utilisateur> findById(Long id) {
+        return utilisateurRepository.findById(id);
+    }
+
     public List<Utilisateur> listerTous() {
         return utilisateurRepository.findAll();
     }
@@ -46,6 +51,36 @@ public class UtilisateurService {
         utilisateur.setPassword(passwordEncoder.encode(utilisateur.getPassword()));
         utilisateur.setActif(true);
         utilisateurRepository.save(utilisateur);
+    }
+
+    /**
+     * Modifie les informations d'un utilisateur existant.
+     * Le mot de passe n'est ré-encodé que s'il est renseigné (non vide).
+     */
+    public void modifierUtilisateur(Long id, String nom, String prenom, String username,
+                                     String password, String role, boolean actif) {
+        Utilisateur existant = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
+
+        // Vérifier l'unicité du username si changé
+        if (!existant.getUsername().equals(username)) {
+            if (utilisateurRepository.findByUsername(username).isPresent()) {
+                throw new RuntimeException("L'identifiant \"" + username + "\" est déjà utilisé par un autre compte.");
+            }
+        }
+
+        existant.setNom(nom);
+        existant.setPrenom(prenom);
+        existant.setUsername(username);
+        existant.setRole(role);
+        existant.setActif(actif);
+
+        // Ne changer le mot de passe que si un nouveau est fourni
+        if (password != null && !password.trim().isEmpty()) {
+            existant.setPassword(passwordEncoder.encode(password));
+        }
+
+        utilisateurRepository.save(existant);
     }
 
     public void supprimer(Long id) {

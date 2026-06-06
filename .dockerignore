@@ -1,0 +1,46 @@
+# === Fichiers Git ===
+.git
+.gitignore
+.gitattributes
+
+# === IDE ===
+.idea
+*.iml
+.vscode
+
+# === Build artifacts ===
+target/
+*.jar
+*.war
+*.class
+
+# === Maven Wrapper (déjà copié explicitement) ===
+# .mvn - ne pas ignorer, nécessaire pour le build
+
+# === Données locales ===
+data/
+*.mv.db
+*.trace.db
+
+# === Fichiers Docker (éviter la récursion) ===
+Dockerfile
+docker-compose.yml
+docker-compose
+.dockerignore
+
+# === Secrets et fichiers sensibles ===
+.env
+.env.*
+!.env.example
+
+# === Documentation ===
+*.md
+LICENSE
+
+# === Scripts et fichiers non nécessaires au build ===
+*.py
+*.sql
+
+# === OS ===
+Thumbs.db
+.DS_Store

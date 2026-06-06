@@ -36,6 +36,10 @@ public class CaisseService {
     // ─── Ajouter / modifier une caisse ────────────────────────────
     @Transactional
     public Caisse sauvegarder(Caisse caisse) {
+        // Si c'est une nouvelle caisse (id == 0), resynchroniser le compteur auto-increment
+        if (caisse.getId() == 0) {
+            caisseRepository.resetAutoIncrement();
+        }
         return caisseRepository.save(caisse);
     }
 

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Nouvelle Caisse — Admin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#14202b;font-family:'IBM Plex Sans',sans-serif;color:#c8daea;min-height:100vh}
+
+        /* ── Header ── */
+        .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1e3245;background:#0f1e2b}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .dot{width:7px;height:7px;border-radius:50%;background:#4fa8e8;box-shadow:0 0 6px #4fa8e8}
+        .header h1{font-size:16px;font-weight:700;letter-spacing:.1em;color:#4fa8e8}
+        .header-right{display:flex;align-items:center;gap:8px}
+        .back-btn{background:#223347;border:1px solid #2a4155;color:#b0cde0;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;transition:background .15s}
+        .back-btn:hover{background:#2a4155}
+        .logout-btn{background:#4a1a1a;border:1px solid #7f1d1d55;color:#f87171;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s}
+        .logout-btn:hover{background:#6a1a1a}
+
+        /* ── Alert ── */
+        .alert{margin:12px 20px 0;padding:9px 14px;border-radius:4px;font-size:12.5px}
+        .alert-error{background:#7f1d1d22;border:1px solid #7f1d1d;color:#f87171}
+
+        /* ── Formulaire ── */
+        .form-wrap{display:flex;justify-content:center;padding:32px 20px}
+        .form-card{background:#1b2d3d;border:1px solid #2a4155;border-radius:8px;width:480px;overflow:hidden;box-shadow:0 12px 40px #00000060}
+        .form-card-header{background:#1a3a5a;padding:16px 24px;border-bottom:1px solid #2a4155;display:flex;align-items:center;gap:10px}
+        .form-card-header h2{font-size:14px;font-weight:700;letter-spacing:.06em;color:#e2f0ff}
+        .form-body{padding:24px}
+
+        /* ── Champs ── */
+        .field{margin-bottom:18px}
+        .field label{display:block;font-size:11px;font-weight:600;color:#7fa3be;letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px}
+        .field input,.field select{
+            width:100%;background:#14202b;border:1px solid #2a4155;border-radius:5px;
+            color:#e2f0ff;padding:10px 12px;font-size:13px;font-family:inherit;
+            transition:border-color .2s,box-shadow .2s
+        }
+        .field input:focus,.field select:focus{outline:none;border-color:#4fa8e8;box-shadow:0 0 0 3px #4fa8e820}
+        .field input::placeholder{color:#3a5a72}
+
+        /* ── Info box ── */
+        .role-info{background:#14202b;border:1px solid #1e3245;border-radius:4px;padding:10px 12px;font-size:11px;color:#4a6a82;line-height:1.8;margin-top:8px}
+        .role-info strong{color:#7fa3be}
+
+        /* ── Boutons ── */
+        .form-footer{display:flex;gap:10px;margin-top:8px}
+        .btn-save{flex:1;background:linear-gradient(135deg,#1a5c38,#0f3a22);border:1px solid #2a8a58;color:#6effa8;padding:11px;border-radius:5px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s}
+        .btn-save:hover{background:linear-gradient(135deg,#226a42,#184a2a)}
+        .btn-cancel{background:#223347;border:1px solid #2a4155;color:#b0cde0;padding:11px 20px;border-radius:5px;font-size:13px;font-family:inherit;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;transition:background .15s}
+        .btn-cancel:hover{background:#2a4155}
+
+        /* ── Séparateur ── */
+        .sep{height:1px;background:#1e3245;margin:16px 0}
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div class="dot"></div>
+        <h1>➕ NOUVELLE CAISSE</h1>
+    </div>
+    <div class="header-right">
+        <a href="/admin/caisses" class="back-btn">← Retour à la liste</a>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-btn">⏻ Déconnexion</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${erreur}" class="alert alert-error" th:text="${erreur}"></div>
+
+<!-- Formulaire -->
+<div class="form-wrap">
+    <div class="form-card">
+        <div class="form-card-header">
+            <span>🏦</span>
+            <h2>CRÉER UNE NOUVELLE CAISSE</h2>
+        </div>
+        <div class="form-body">
+            <form th:action="@{/admin/caisses/sauvegarder}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Nom de la caisse -->
+                <div class="field">
+                    <label for="nom">Nom de la caisse</label>
+                    <input id="nom" type="text" name="nom"
+                           placeholder="Ex: Caisse Agence Rabat" required autocomplete="off"/>
+                </div>
+
+                <div class="sep"></div>
+
+                <div class="role-info">
+                    <strong>ℹ️ Info :</strong> La nouvelle caisse sera créée avec des soldes initialisés à <strong>0,00 dh</strong>.<br/>
+                    Les soldes seront automatiquement recalculés dès qu'une opération lui sera affectée.<br/>
+                    <strong>⚠️ Attention :</strong> Le nom de la caisse doit être unique. Deux caisses ne peuvent pas avoir le même nom.
+                </div>
+
+                <div class="sep"></div>
+
+                <!-- Boutons -->
+                <div class="form-footer">
+                    <a href="/admin/caisses" class="btn-cancel">Annuler</a>
+                    <button type="submit" class="btn-save">💾 Créer la caisse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
